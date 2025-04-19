@@ -1,9 +1,11 @@
 import gi
-import os
+
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+from app_info import get_app_info
+from actions import *
 
 class App(Gtk.Menu):
     def __init__(self):
@@ -14,10 +16,16 @@ class App(Gtk.Menu):
 
     def build_menu(self):
         self.media_control_menu()
-        refresh_item = Gtk.MenuItem(label="Refresh")
+        self.terminal_menu()
+        self.application_menu()
 
         self.append(self.media_item)
-        self.append(refresh_item)
+        self.append(self.terminal_item)
+        self.append(self.app_menu_item)
+
+    def terminal_menu(self):
+        self.terminal_item = Gtk.MenuItem(label="Terminal")
+        self.terminal_item.connect('activate', open_terminal)
 
 
     def media_control_menu(self):
@@ -25,23 +33,22 @@ class App(Gtk.Menu):
         media_submenu = Gtk.Menu()
 
         pause_play = Gtk.MenuItem(label="Pause/Play")
-        pause_play.connect('activate', self.pause_play_func)
-        
+        pause_play.connect('activate', pause_play_func)
         
         reset = Gtk.MenuItem(label="Reset")
-        reset.connect('activate', self.reset_func)
+        reset.connect('activate', reset_func)
 
         fast_forward = Gtk.MenuItem(label="Fast Forward")
-        fast_forward.connect('activate', self.fast_forward_func)
+        fast_forward.connect('activate', fast_forward_func)
 
         backward = Gtk.MenuItem(label="Backward")
-        backward.connect('activate', self.backward_func)
+        backward.connect('activate', backward_func)
 
         next_track = Gtk.MenuItem(label="Next Track")
-        next_track.connect('activate', self.next_track)
+        next_track.connect('activate', next_track_func)
         
         previous_track = Gtk.MenuItem(label="Previous Track")
-        previous_track.connect('activate', self.previous_track)
+        previous_track.connect('activate', previous_track_func)
 
         # label = Gtk.MenuItem(label="Advanced Options")
         # label.set_sensitive(False)
@@ -58,26 +65,40 @@ class App(Gtk.Menu):
         media_submenu.append(backward)
         media_submenu.append(next_track)
         media_submenu.append(previous_track)
-        
+
         self.media_item.set_submenu(media_submenu)
 
-    def previous_track(self, widget):
-        os.system("playerctl previous")
-        
-    def next_track(self, widget):
-        os.system("playerctl next")
 
-    def reset_func(self, widget):
-        os.system('playerctl position 0')
+    def application_menu(self):
+        self.app_menu_item = Gtk.MenuItem(label="Applications")
+        app_submenu = Gtk.Menu()
+        self.app_menu_item.set_submenu(app_submenu)
 
-    def pause_play_func(self, widget):
-        os.system('playerctl play-pause')
-    
-    def fast_forward_func(self, widget):
-        os.system("playerctl position 10+")
+        apps = get_app_info()
+        for name, exec, icon in apps:
+            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
 
-    def backward_func(self, widget):
-        os.system("playerctl position 10-")
+            try:
+                pixbuf = Gtk.IconTheme.get_default().load_icon(icon, 32, 0)
+                scaled_pixbuf = pixbuf.scale_simple(16, 16, GdkPixbuf.InterpType.BILINEAR)
+                app_icon = Gtk.Image.new_from_pixbuf(scaled_pixbuf)
+            except GLib.Error:
+                app_icon = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.SMALL_TOOLBAR)
+
+            app_label = Gtk.Label(label=name)
+
+            box.pack_start(app_icon, False, False, 0)
+            box.pack_start(app_label, False, False, 0)
+            box.show_all()
+
+            menu_item = Gtk.MenuItem()
+            menu_item.add(box)
+
+            menu_item.connect("activate", launch_app, exec)
+
+            app_submenu.append(menu_item)
+
+        self.app_menu_item.show_all()
 
 
 def show_menu():
