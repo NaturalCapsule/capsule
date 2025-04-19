@@ -4,7 +4,7 @@ import shlex
 
 def launch_app(widget, exec):
     cmd = shlex.split(exec)
-    subprocess.Popen(cmd, start_new_session=True)
+    subprocess.Popen(cmd, start_new_session = True, cwd = os.path.expanduser("~"))
 
 def open_terminal(widget):
     try:
@@ -36,3 +36,16 @@ def fast_forward_func(widget):
 
 def backward_func(widget):
     os.system("playerctl position 10-")
+
+def shutdown_machine(widget):
+    subprocess.Popen(['shutdown', 'now'])
+
+def reboot_machine(widget):
+    subprocess.Popen(['reboot'])
+
+def lock_machine(widget):
+    subprocess.Popen(['hyprlock'])
+
+def hib_machine(widget):
+    subprocess.Popen(['systemctl', 'hibernate'])
+    

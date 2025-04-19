@@ -18,19 +18,49 @@ class App(Gtk.Menu):
         self.media_control_menu()
         self.terminal_menu()
         self.application_menu()
+        self.power_menu()
 
         self.append(self.media_item)
         self.append(self.terminal_item)
         self.append(self.app_menu_item)
+        self.append(self.power_item)
 
     def terminal_menu(self):
-        self.terminal_item = Gtk.MenuItem(label="Terminal")
+        self.terminal_item = Gtk.MenuItem()
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/terminal.png', 20, 20)
+        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        app_label = Gtk.Label(label="Terminal")
+
         self.terminal_item.connect('activate', open_terminal)
 
 
+        box.pack_start(app_icon, False, False, 0)
+        box.pack_start(app_label, False, False, 0)
+        box.show_all()
+        self.terminal_item.add(box)
+
     def media_control_menu(self):
-        self.media_item = Gtk.MenuItem(label="Media Control")
         media_submenu = Gtk.Menu()
+        self.media_item = Gtk.MenuItem()
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/music.png', 20, 20)
+        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        app_label = Gtk.Label(label="Media Control")
+
+
+        box.pack_start(app_icon, False, False, 0)
+        box.pack_start(app_label, False, False, 0)
+        box.show_all()
+        self.media_item.add(box)
+
 
         pause_play = Gtk.MenuItem(label="Pause/Play")
         pause_play.connect('activate', pause_play_func)
@@ -70,9 +100,23 @@ class App(Gtk.Menu):
 
 
     def application_menu(self):
-        self.app_menu_item = Gtk.MenuItem(label="Applications")
         app_submenu = Gtk.Menu()
+        self.app_menu_item = Gtk.MenuItem()
         self.app_menu_item.set_submenu(app_submenu)
+
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/app.png', 20, 20)
+        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        app_label = Gtk.Label(label="Applications")
+
+
+        box.pack_start(app_icon, False, False, 0)
+        box.pack_start(app_label, False, False, 0)
+        box.show_all()
+        self.app_menu_item.add(box)
 
         apps = get_app_info()
         for name, exec, icon in apps:
@@ -100,6 +144,45 @@ class App(Gtk.Menu):
 
         self.app_menu_item.show_all()
 
+    def power_menu(self):
+        self.power_item = Gtk.MenuItem()
+        power_submenu = Gtk.Menu()
+        self.power_item.set_submenu(power_submenu)
+
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/power.png', 20, 20)
+        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        app_label = Gtk.Label(label="Power Settings")
+
+
+        box.pack_start(app_icon, False, False, 0)
+        box.pack_start(app_label, False, False, 0)
+        box.show_all()
+        self.power_item.add(box)
+
+
+        power_off = Gtk.MenuItem(label="Power Off")
+        power_off.connect('activate', shutdown_machine)
+        
+        reboot = Gtk.MenuItem(label="Reboot")
+        reboot.connect('activate', reboot_machine)
+
+        lock = Gtk.MenuItem(label="Lock")
+        lock.connect('activate', lock_machine)
+
+        hib = Gtk.MenuItem(label="hibernate")
+        hib.connect('activate', hib_machine)
+
+        power_submenu.append(power_off)
+        power_submenu.append(reboot)
+        power_submenu.append(lock)
+        power_submenu.append(hib)
+
+
+        self.power_item.set_submenu(power_submenu)
 
 def show_menu():
     menu = App()
