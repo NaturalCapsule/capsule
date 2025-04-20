@@ -6,6 +6,10 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from app_info import get_app_info
 from actions import *
+from sys_info import *
+from timers import RunTimers
+
+
 
 class App(Gtk.Menu):
     def __init__(self):
@@ -19,11 +23,17 @@ class App(Gtk.Menu):
         self.terminal_menu()
         self.application_menu()
         self.power_menu()
+        self.system_info_menu()
+
 
         self.append(self.media_item)
         self.append(self.terminal_item)
         self.append(self.app_menu_item)
         self.append(self.power_item)
+        self.append(self.system_item)
+
+        RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, self.gpu_power)
+
 
     def terminal_menu(self):
         self.terminal_item = Gtk.MenuItem()
@@ -80,14 +90,6 @@ class App(Gtk.Menu):
         previous_track = Gtk.MenuItem(label="Previous Track")
         previous_track.connect('activate', previous_track_func)
 
-        # label = Gtk.MenuItem(label="Advanced Options")
-        # label.set_sensitive(False)
-
-        # media_submenu.append(label)
-
-        # media_submenu.append(Gtk.SeparatorMenuItem())
-
-
 
         media_submenu.append(pause_play)
         media_submenu.append(reset)
@@ -124,7 +126,7 @@ class App(Gtk.Menu):
 
             try:
                 pixbuf = Gtk.IconTheme.get_default().load_icon(icon, 32, 0)
-                scaled_pixbuf = pixbuf.scale_simple(16, 16, GdkPixbuf.InterpType.BILINEAR)
+                scaled_pixbuf = pixbuf.scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
                 app_icon = Gtk.Image.new_from_pixbuf(scaled_pixbuf)
             except GLib.Error:
                 app_icon = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.SMALL_TOOLBAR)
@@ -183,6 +185,90 @@ class App(Gtk.Menu):
 
 
         self.power_item.set_submenu(power_submenu)
+
+
+    def system_info_menu(self):
+        self.system_item = Gtk.MenuItem()
+        system_submenu = Gtk.Menu()
+        self.system_item.set_submenu(system_submenu)
+
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/info.png', 20, 20)
+        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        app_label = Gtk.Label(label="Hardware Info")
+
+
+        box.pack_start(app_icon, False, False, 0)
+        box.pack_start(app_label, False, False, 0)
+        box.show_all()
+        self.system_item.add(box)
+
+        cpu_item = Gtk.MenuItem(label=" CPU: ")
+        cpu_item.set_sensitive(False)
+        
+        cpu_name = Gtk.MenuItem()
+        cpu_name.set_sensitive(False)
+        cpu_name.set_label(f"CPU Name: {get_cpu_info()}")
+        
+        self.cpu_temp = Gtk.MenuItem()
+        self.cpu_temp.set_sensitive(False)
+        
+        self.cpu_usage = Gtk.MenuItem()
+        self.cpu_usage.set_sensitive(False)
+
+
+        ram_item = Gtk.MenuItem(label=" RAM: ")
+        ram_item.set_sensitive(False)
+
+        self.ram_usage = Gtk.MenuItem()
+        self.ram_usage.set_sensitive(False)
+        
+        self.used_ram = Gtk.MenuItem()
+        self.used_ram.set_sensitive(False)
+
+        gpu_item = Gtk.MenuItem(label="󰢮 GPU: ")
+        gpu_item.set_sensitive(False)
+        
+        gpu_name = Gtk.MenuItem(label=f"GPU Name: {get_nvidia_name()}")
+        gpu_name.set_sensitive(False)
+        
+        self.gpu_temp = Gtk.MenuItem()
+        self.gpu_temp.set_sensitive(False)
+
+        self.gpu_usage = Gtk.MenuItem()
+        self.gpu_usage.set_sensitive(False)
+        
+        self.gpu_vram = Gtk.MenuItem()
+        self.gpu_vram.set_sensitive(False)
+
+
+        self.gpu_speed = Gtk.MenuItem()
+        self.gpu_speed.set_sensitive(False)
+
+        self.gpu_power = Gtk.MenuItem()
+        self.gpu_power.set_sensitive(False)
+
+
+        system_submenu.append(cpu_item)
+        system_submenu.append(cpu_name)
+        system_submenu.append(self.cpu_temp)
+        system_submenu.append(self.cpu_usage)
+        system_submenu.append(Gtk.SeparatorMenuItem())
+        system_submenu.append(ram_item)
+        system_submenu.append(self.ram_usage)
+        system_submenu.append(self.used_ram)
+        system_submenu.append(Gtk.SeparatorMenuItem())
+        system_submenu.append(gpu_item)
+        system_submenu.append(gpu_name)
+        system_submenu.append(self.gpu_temp)
+        system_submenu.append(self.gpu_usage)
+        system_submenu.append(self.gpu_vram)
+        system_submenu.append(self.gpu_speed)
+        system_submenu.append(self.gpu_power)
+
 
 def show_menu():
     menu = App()
