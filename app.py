@@ -77,21 +77,89 @@ class App(Gtk.Menu):
         pause_play = Gtk.MenuItem(label="Pause/Play")
         pause_play.connect('activate', pause_play_func)
         
-        reset = Gtk.MenuItem(label="Reset")
+        reset = Gtk.MenuItem()
         reset.connect('activate', reset_func)
 
-        fast_forward = Gtk.MenuItem(label="Fast Forward")
-        fast_forward.connect('activate', fast_forward_func)
 
-        backward = Gtk.MenuItem(label="Backward")
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/reset.png', 20, 20)
+        reset_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        reset_label = Gtk.Label(label = "Reset")
+
+
+        box.pack_start(reset_icon, False, False, 0)
+        box.pack_start(reset_label, False, False, 0)
+        box.show_all()
+        reset.add(box)
+
+        fast_forward = Gtk.MenuItem()
+        fast_forward.connect('activate', fast_forward_func)
+        
+        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/fast-forward.png', 20, 20)
+        fast_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        fast_label = Gtk.Label(label = "Fast Forward")
+
+
+        box_.pack_start(fast_icon, False, False, 0)
+        box_.pack_start(fast_label, False, False, 0)
+        box_.show_all()
+        fast_forward.add(box_)
+
+
+        backward = Gtk.MenuItem()
         backward.connect('activate', backward_func)
 
-        next_track = Gtk.MenuItem(label="Next Track")
+        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/fast-backward.png', 20, 20)
+        back_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        back_label = Gtk.Label(label = "Fast Backward")
+
+
+        box__.pack_start(back_icon, False, False, 0)
+        box__.pack_start(back_label, False, False, 0)
+        box__.show_all()
+        backward.add(box__)
+
+
+        next_track = Gtk.MenuItem()
         next_track.connect('activate', next_track_func)
-        
-        previous_track = Gtk.MenuItem(label="Previous Track")
+
+        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/next.png', 20, 20)
+        next_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        next_label = Gtk.Label(label = "Next Track")
+
+
+        box___.pack_start(next_icon, False, False, 0)
+        box___.pack_start(next_label, False, False, 0)
+        box___.show_all()
+        next_track.add(box___)
+
+
+        previous_track = Gtk.MenuItem()
         previous_track.connect('activate', previous_track_func)
 
+        box____ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/previous.png', 20, 20)
+        previous_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        previous_label = Gtk.Label(label = "Previous Track")
+
+
+        box____.pack_start(previous_icon, False, False, 0)
+        box____.pack_start(previous_label, False, False, 0)
+        box____.show_all()
+        previous_track.add(box____)
 
         media_submenu.append(pause_play)
         media_submenu.append(reset)
@@ -206,7 +274,7 @@ class App(Gtk.Menu):
         lock.connect('activate', lock_machine)
 
 
-        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
 
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/lock.png', 20, 20)
         lock_icon = Gtk.Image.new_from_pixbuf(pixbuf)
@@ -222,7 +290,7 @@ class App(Gtk.Menu):
         hib = Gtk.MenuItem()
         hib.connect('activate', hib_machine)
 
-        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
 
         pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/hibernate.png', 20, 20)
         hib_icon = Gtk.Image.new_from_pixbuf(pixbuf)
