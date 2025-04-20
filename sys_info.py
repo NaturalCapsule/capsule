@@ -1,6 +1,16 @@
 import subprocess
 import re
 
+
+def check_gpu():
+    try:
+        result = subprocess.run(['nvidia-smi'],
+                                stdout=subprocess.PIPE, text=True)
+        check = result.stdout.strip()
+        return f"{check}"
+    except FileNotFoundError:
+        return ''
+
 def get_nvidia_gpu_usage():
     try:
         result = subprocess.run(['nvidia-smi', '--query-gpu=utilization.gpu', '--format=csv,noheader,nounits'],
@@ -46,7 +56,7 @@ def get_nvidia_powerdraw():
 ,
                                 stdout=subprocess.PIPE, text=True)
         power = result.stdout.strip()
-        return f"{power}"
+        return f"{power}W"
     except FileNotFoundError:
         return ''
 
@@ -104,18 +114,6 @@ def get_used_ram():
     result = float(result.stdout.strip())
     return f"{result:.2f}"
 
-# def get_ram_name():
-
-#     result = subprocess.run(
-#         ['sudo', 'dmidecode', '-t', 'memory'],
-#         capture_output=True,
-#         text=True
-#     )
-
-#     for line in result.stdout.splitlines():
-#         if "Manufacturer" in line or "Part Number" in line:
-#             return line.strip()
-
 
 def get_cpu_temp():
     result = subprocess.run(['sensors'], capture_output=True, text=True)
@@ -123,10 +121,10 @@ def get_cpu_temp():
 
     # Regex patterns for Intel & AMD
     patterns = [
-        r'(Core \d+):\s+\+([\d\.]+)°C',        # Intel cores
-        r'Package id \d+:\s+\+([\d\.]+)°C',    # Intel package
-        r'Tctl:\s+\+([\d\.]+)°C',              # AMD Tctl
-        r'Tdie:\s+\+([\d\.]+)°C',              # AMD Tdie
+        r'(Core \d+):\s+\+([\d\.]+)°C',    
+        r'Package id \d+:\s+\+([\d\.]+)°C',
+        r'Tctl:\s+\+([\d\.]+)°C', 
+        r'Tdie:\s+\+([\d\.]+)°C', 
     ]
 
     for line in result.stdout.splitlines():

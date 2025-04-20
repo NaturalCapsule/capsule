@@ -380,41 +380,45 @@ class App(Gtk.Menu):
         self.used_ram = Gtk.MenuItem()
         self.used_ram.set_sensitive(False)
 
-        gpu_item = Gtk.MenuItem()
-        gpu_item.set_sensitive(False)
+        check = check_gpu()
 
-        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+        if check != '':
 
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/gpu.png', 20, 20)
-        gpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+            gpu_item = Gtk.MenuItem()
+            gpu_item.set_sensitive(False)
 
-        gpu_label = Gtk.Label(label = "GPU: ")
+            box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
 
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/gpu.png', 20, 20)
+            gpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
 
-        box__.pack_start(gpu_icon, False, False, 0)
-        box__.pack_start(gpu_label, False, False, 0)
-        box__.show_all()
-        gpu_item.add(box__)
+            gpu_label = Gtk.Label(label = "GPU: ")
 
 
-        gpu_name = Gtk.MenuItem(label=f"GPU Name: {get_nvidia_name()}")
-        gpu_name.set_sensitive(False)
-        
-        self.gpu_temp = Gtk.MenuItem()
-        self.gpu_temp.set_sensitive(False)
-
-        self.gpu_usage = Gtk.MenuItem()
-        self.gpu_usage.set_sensitive(False)
-        
-        self.gpu_vram = Gtk.MenuItem()
-        self.gpu_vram.set_sensitive(False)
+            box__.pack_start(gpu_icon, False, False, 0)
+            box__.pack_start(gpu_label, False, False, 0)
+            box__.show_all()
+            gpu_item.add(box__)
 
 
-        self.gpu_speed = Gtk.MenuItem()
-        self.gpu_speed.set_sensitive(False)
+            gpu_name = Gtk.MenuItem(label=f"GPU Name: {get_nvidia_name()}")
+            gpu_name.set_sensitive(False)
+            
+            self.gpu_temp = Gtk.MenuItem()
+            self.gpu_temp.set_sensitive(False)
 
-        self.gpu_power = Gtk.MenuItem()
-        self.gpu_power.set_sensitive(False)
+            self.gpu_usage = Gtk.MenuItem()
+            self.gpu_usage.set_sensitive(False)
+            
+            self.gpu_vram = Gtk.MenuItem()
+            self.gpu_vram.set_sensitive(False)
+
+
+            self.gpu_speed = Gtk.MenuItem()
+            self.gpu_speed.set_sensitive(False)
+
+            self.gpu_power = Gtk.MenuItem()
+            self.gpu_power.set_sensitive(False)
 
 
         system_submenu.append(cpu_item)

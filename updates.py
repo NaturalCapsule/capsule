@@ -1,6 +1,3 @@
-import gi
-gi.require_version('Gtk', '3.0')
-from gi.repository import GLib
 from sys_info import *
 
 def update_cpu_temp(cpu_temp):
@@ -37,7 +34,7 @@ def update_nvidia_usage(gpu_usage):
 
 def update_nvidia_fanspeed(gpu_speed):
     speed = get_nvidia_fanspeed()
-    gpu_speed.set_label(f"GPU Usage: {speed}%")
+    gpu_speed.set_label(f"GPU Fan Speed: {speed}RPM")
     return True
 
 def update_nvidia_usedVram(gpu_vram):
