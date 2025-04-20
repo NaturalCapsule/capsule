@@ -27,10 +27,12 @@ class App(Gtk.Menu):
 
 
         self.append(self.media_item)
-        self.append(self.terminal_item)
         self.append(self.app_menu_item)
-        self.append(self.power_item)
         self.append(self.system_item)
+        self.append(self.power_item)
+        self.append(Gtk.SeparatorMenuItem())
+        
+        self.append(self.terminal_item)
 
         RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, self.gpu_power)
 
@@ -166,17 +168,72 @@ class App(Gtk.Menu):
         self.power_item.add(box)
 
 
-        power_off = Gtk.MenuItem(label="Power Off")
+        power_off = Gtk.MenuItem()
         power_off.connect('activate', shutdown_machine)
-        
-        reboot = Gtk.MenuItem(label="Reboot")
+
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/power_off.png', 20, 20)
+        power_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        power_label = Gtk.Label(label = "Power Off")
+
+
+        box.pack_start(power_icon, False, False, 0)
+        box.pack_start(power_label, False, False, 0)
+        box.show_all()
+        power_off.add(box)
+
+        reboot = Gtk.MenuItem()
         reboot.connect('activate', reboot_machine)
 
-        lock = Gtk.MenuItem(label="Lock")
+
+        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/reboot.png', 20, 20)
+        reboot_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        reboot_label = Gtk.Label(label = "Reboot")
+
+
+        box_.pack_start(reboot_icon, False, False, 0)
+        box_.pack_start(reboot_label, False, False, 0)
+        box_.show_all()
+        reboot.add(box_)
+
+
+        lock = Gtk.MenuItem()
         lock.connect('activate', lock_machine)
 
-        hib = Gtk.MenuItem(label="hibernate")
+
+        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/lock.png', 20, 20)
+        lock_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        lock_label = Gtk.Label(label = "Lock")
+
+
+        box__.pack_start(lock_icon, False, False, 0)
+        box__.pack_start(lock_label, False, False, 0)
+        box__.show_all()
+        lock.add(box__)
+
+        hib = Gtk.MenuItem()
         hib.connect('activate', hib_machine)
+
+        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/hibernate.png', 20, 20)
+        hib_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        hib_label = Gtk.Label(label = "Hibernate")
+
+
+        box___.pack_start(hib_icon, False, False, 0)
+        box___.pack_start(hib_label, False, False, 0)
+        box___.show_all()
+        hib.add(box___)
 
         power_submenu.append(power_off)
         power_submenu.append(reboot)
@@ -206,8 +263,21 @@ class App(Gtk.Menu):
         box.show_all()
         self.system_item.add(box)
 
-        cpu_item = Gtk.MenuItem(label=" CPU: ")
+        cpu_item = Gtk.MenuItem()
         cpu_item.set_sensitive(False)
+        
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/cpu.png', 20, 20)
+        cpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        cpu_label = Gtk.Label(label="CPU: ")
+
+
+        box.pack_start(cpu_icon, False, False, 0)
+        box.pack_start(cpu_label, False, False, 0)
+        box.show_all()
+        cpu_item.add(box)
         
         cpu_name = Gtk.MenuItem()
         cpu_name.set_sensitive(False)
@@ -220,8 +290,21 @@ class App(Gtk.Menu):
         self.cpu_usage.set_sensitive(False)
 
 
-        ram_item = Gtk.MenuItem(label=" RAM: ")
+        ram_item = Gtk.MenuItem()
         ram_item.set_sensitive(False)
+
+        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/ram.png', 20, 20)
+        ram_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        ram_label = Gtk.Label(label="RAM: ")
+
+
+        box_.pack_start(ram_icon, False, False, 0)
+        box_.pack_start(ram_label, False, False, 0)
+        box_.show_all()
+        ram_item.add(box_)
 
         self.ram_usage = Gtk.MenuItem()
         self.ram_usage.set_sensitive(False)
@@ -229,9 +312,23 @@ class App(Gtk.Menu):
         self.used_ram = Gtk.MenuItem()
         self.used_ram.set_sensitive(False)
 
-        gpu_item = Gtk.MenuItem(label="󰢮 GPU: ")
+        gpu_item = Gtk.MenuItem()
         gpu_item.set_sensitive(False)
-        
+
+        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
+
+        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/gpu.png', 20, 20)
+        gpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
+
+        gpu_label = Gtk.Label(label = "GPU: ")
+
+
+        box__.pack_start(gpu_icon, False, False, 0)
+        box__.pack_start(gpu_label, False, False, 0)
+        box__.show_all()
+        gpu_item.add(box__)
+
+
         gpu_name = Gtk.MenuItem(label=f"GPU Name: {get_nvidia_name()}")
         gpu_name.set_sensitive(False)
         
