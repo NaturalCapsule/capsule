@@ -429,14 +429,15 @@ class App(Gtk.Menu):
         system_submenu.append(ram_item)
         system_submenu.append(self.ram_usage)
         system_submenu.append(self.used_ram)
-        system_submenu.append(Gtk.SeparatorMenuItem())
-        system_submenu.append(gpu_item)
-        system_submenu.append(gpu_name)
-        system_submenu.append(self.gpu_temp)
-        system_submenu.append(self.gpu_usage)
-        system_submenu.append(self.gpu_vram)
-        system_submenu.append(self.gpu_speed)
-        system_submenu.append(self.gpu_power)
+        if check != '':
+            system_submenu.append(Gtk.SeparatorMenuItem())
+            system_submenu.append(gpu_item)
+            system_submenu.append(gpu_name)
+            system_submenu.append(self.gpu_temp)
+            system_submenu.append(self.gpu_usage)
+            system_submenu.append(self.gpu_vram)
+            system_submenu.append(self.gpu_speed)
+            system_submenu.append(self.gpu_power)
 
 
 def show_menu():
