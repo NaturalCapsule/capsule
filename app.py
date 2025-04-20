@@ -3,457 +3,421 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, Pango
 from app_info import get_app_info
 from actions import *
 from sys_info import *
 from timers import RunTimers
 
 
-
-class App(Gtk.Menu):
+class App(Gtk.Window):
     def __init__(self):
-        super().__init__()
+        super().__init__(type=Gtk.WindowType.POPUP)
+        
+        self.set_position(Gtk.WindowPosition.MOUSE)
+        self.set_skip_taskbar_hint(True)
+        self.set_skip_pager_hint(True)
+        self.set_keep_above(True)
+        self.set_decorated(False)
+        self.set_resizable(False)
+        self.set_app_paintable(True)
+        
+        screen = self.get_screen()
+        visual = screen.get_rgba_visual()
+        if visual and screen.is_composited():
+            self.set_visual(visual)
+        
+        self.cpu_temp = Gtk.Label(label="CPU Temperature: Updating...")
+        self.cpu_usage = Gtk.Label(label="CPU Usage: Updating...")
+        self.ram_usage = Gtk.Label(label="RAM Usage: Updating...")
+        self.used_ram = Gtk.Label(label="Used RAM: Updating...")
+        
+        self.gpu_temp = Gtk.Label(label="GPU Temperature: Updating...")
+        self.gpu_usage = Gtk.Label(label="GPU Usage: Updating...")
+        self.gpu_vram = Gtk.Label(label="GPU VRAM: Updating...")
+        self.gpu_speed = Gtk.Label(label="GPU Speed: Updating...")
+        self.gpu_power = Gtk.Label(label="GPU Power: Updating...")
+        
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.add(self.main_box)
+        
+        self.open_submenus = {}
+        
         self.build_menu()
+        
+        self.connect("focus-out-event", self.on_focus_out)
+        self.connect("key-press-event", self.on_key_press)
+        
+        RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, 
+                  self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, 
+                  self.gpu_power)
+        
         self.show_all()
 
+    def on_focus_out(self, widget, event):
+        self.destroy()
+        Gtk.main_quit()
+        return False
+        
+    def on_key_press(self, widget, event):
+        if event.keyval == Gdk.KEY_Escape:
+            self.destroy()
+            Gtk.main_quit()
+            return True
+        return False
 
     def build_menu(self):
-        self.media_control_menu()
-        self.terminal_menu()
-        self.application_menu()
-        self.power_menu()
-        self.system_info_menu()
-
-
-        self.append(self.media_item)
-        self.append(self.app_menu_item)
-        self.append(self.system_item)
-        self.append(self.power_item)
-        self.append(Gtk.SeparatorMenuItem())
+        self.media_box = self.create_menu_item("Media Control", "app_images/music.png")
+        self.terminal_box = self.create_menu_item("Terminal", "app_images/terminal.png")
+        self.hyprland_box = self.create_menu_item("Exit Hyprland", "app_images/hypr.png")
+        self.app_box = self.create_menu_item("Applications", "app_images/app.png")
+        self.power_box = self.create_menu_item("Power Settings", "app_images/power.png")
+        self.system_box = self.create_menu_item("Hardware Info", "app_images/info.png")
         
-        self.append(self.terminal_item)
-
-        RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, self.gpu_power)
-
-
-    def terminal_menu(self):
-        self.terminal_item = Gtk.MenuItem()
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/terminal.png', 20, 20)
-        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        app_label = Gtk.Label(label="Terminal")
-
-        self.terminal_item.connect('activate', open_terminal)
-
-
-        box.pack_start(app_icon, False, False, 0)
-        box.pack_start(app_label, False, False, 0)
-        box.show_all()
-        self.terminal_item.add(box)
-
-    def media_control_menu(self):
-        media_submenu = Gtk.Menu()
-        self.media_item = Gtk.MenuItem()
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/music.png', 20, 20)
-        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        app_label = Gtk.Label(label="Media Control")
-
-
-        box.pack_start(app_icon, False, False, 0)
-        box.pack_start(app_label, False, False, 0)
-        box.show_all()
-        self.media_item.add(box)
-
-
-        pause_play = Gtk.MenuItem(label="Pause/Play")
-        pause_play.connect('activate', pause_play_func)
+        self.media_submenu = self.build_media_control_menu()
+        self.terminal_box.connect("button-press-event", self.on_terminal_click)
+        self.hyprland_box.connect("button-press-event", self.on_hypr_click)
+        self.app_submenu = self.build_application_menu()
+        self.power_submenu = self.build_power_menu()
+        self.system_submenu = self.build_system_info_menu()
         
-        reset = Gtk.MenuItem()
-        reset.connect('activate', reset_func)
-
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/reset.png', 20, 20)
-        reset_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        reset_label = Gtk.Label(label = "Reset")
-
-
-        box.pack_start(reset_icon, False, False, 0)
-        box.pack_start(reset_label, False, False, 0)
-        box.show_all()
-        reset.add(box)
-
-        fast_forward = Gtk.MenuItem()
-        fast_forward.connect('activate', fast_forward_func)
+        self.media_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.media_submenu, w, "media"))
+        self.app_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.app_submenu, w, "app"))
+        self.power_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.power_submenu, w, "power"))
+        self.system_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.system_submenu, w, "system"))
         
-        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/fast-forward.png', 20, 20)
-        fast_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        fast_label = Gtk.Label(label = "Fast Forward")
-
-
-        box_.pack_start(fast_icon, False, False, 0)
-        box_.pack_start(fast_label, False, False, 0)
-        box_.show_all()
-        fast_forward.add(box_)
-
-
-        backward = Gtk.MenuItem()
-        backward.connect('activate', backward_func)
-
-        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/fast-backward.png', 20, 20)
-        back_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        back_label = Gtk.Label(label = "Fast Backward")
-
-
-        box__.pack_start(back_icon, False, False, 0)
-        box__.pack_start(back_label, False, False, 0)
-        box__.show_all()
-        backward.add(box__)
-
-
-        next_track = Gtk.MenuItem()
-        next_track.connect('activate', next_track_func)
-
-        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/next.png', 20, 20)
-        next_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        next_label = Gtk.Label(label = "Next Track")
-
-
-        box___.pack_start(next_icon, False, False, 0)
-        box___.pack_start(next_label, False, False, 0)
-        box___.show_all()
-        next_track.add(box___)
-
-
-        previous_track = Gtk.MenuItem()
-        previous_track.connect('activate', previous_track_func)
-
-        box____ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/previous.png', 20, 20)
-        previous_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        previous_label = Gtk.Label(label = "Previous Track")
-
-
-        box____.pack_start(previous_icon, False, False, 0)
-        box____.pack_start(previous_label, False, False, 0)
-        box____.show_all()
-        previous_track.add(box____)
-
-        media_submenu.append(pause_play)
-        media_submenu.append(reset)
-        media_submenu.append(fast_forward)
-        media_submenu.append(backward)
-        media_submenu.append(next_track)
-        media_submenu.append(previous_track)
-
-        self.media_item.set_submenu(media_submenu)
-
-
-    def application_menu(self):
-        app_submenu = Gtk.Menu()
-        self.app_menu_item = Gtk.MenuItem()
-        self.app_menu_item.set_submenu(app_submenu)
-
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/app.png', 20, 20)
-        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        app_label = Gtk.Label(label="Applications")
-
-
-        box.pack_start(app_icon, False, False, 0)
-        box.pack_start(app_label, False, False, 0)
-        box.show_all()
-        self.app_menu_item.add(box)
-
-        apps = get_app_info()
-        for name, exec, icon in apps:
-            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-            try:
-                pixbuf = Gtk.IconTheme.get_default().load_icon(icon, 32, 0)
-                scaled_pixbuf = pixbuf.scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
-                app_icon = Gtk.Image.new_from_pixbuf(scaled_pixbuf)
-            except GLib.Error:
-                app_icon = Gtk.Image.new_from_icon_name(icon, Gtk.IconSize.SMALL_TOOLBAR)
-
-            app_label = Gtk.Label(label=name)
-
-            box.pack_start(app_icon, False, False, 0)
-            box.pack_start(app_label, False, False, 0)
-            box.show_all()
-
-            menu_item = Gtk.MenuItem()
-            menu_item.add(box)
-
-            menu_item.connect("activate", launch_app, exec)
-
-            app_submenu.append(menu_item)
-
-        self.app_menu_item.show_all()
-
-    def power_menu(self):
-        self.power_item = Gtk.MenuItem()
-        power_submenu = Gtk.Menu()
-        self.power_item.set_submenu(power_submenu)
-
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/power.png', 20, 20)
-        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        app_label = Gtk.Label(label="Power Settings")
-
-
-        box.pack_start(app_icon, False, False, 0)
-        box.pack_start(app_label, False, False, 0)
-        box.show_all()
-        self.power_item.add(box)
-
-
-        power_off = Gtk.MenuItem()
-        power_off.connect('activate', shutdown_machine)
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/power_off.png', 20, 20)
-        power_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        power_label = Gtk.Label(label = "Power Off")
-
-
-        box.pack_start(power_icon, False, False, 0)
-        box.pack_start(power_label, False, False, 0)
-        box.show_all()
-        power_off.add(box)
-
-        reboot = Gtk.MenuItem()
-        reboot.connect('activate', reboot_machine)
-
-
-        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/reboot.png', 20, 20)
-        reboot_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        reboot_label = Gtk.Label(label = "Reboot")
-
-
-        box_.pack_start(reboot_icon, False, False, 0)
-        box_.pack_start(reboot_label, False, False, 0)
-        box_.show_all()
-        reboot.add(box_)
-
-
-        lock = Gtk.MenuItem()
-        lock.connect('activate', lock_machine)
-
-
-        box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/lock.png', 20, 20)
-        lock_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        lock_label = Gtk.Label(label = "Lock")
-
-
-        box__.pack_start(lock_icon, False, False, 0)
-        box__.pack_start(lock_label, False, False, 0)
-        box__.show_all()
-        lock.add(box__)
-
-        hib = Gtk.MenuItem()
-        hib.connect('activate', hib_machine)
-
-        box___ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=4)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/hibernate.png', 20, 20)
-        hib_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        hib_label = Gtk.Label(label = "Hibernate")
-
-
-        box___.pack_start(hib_icon, False, False, 0)
-        box___.pack_start(hib_label, False, False, 0)
-        box___.show_all()
-        hib.add(box___)
-
-        power_submenu.append(power_off)
-        power_submenu.append(reboot)
-        power_submenu.append(lock)
-        power_submenu.append(hib)
-
-
-        self.power_item.set_submenu(power_submenu)
-
-
-    def system_info_menu(self):
-        self.system_item = Gtk.MenuItem()
-        system_submenu = Gtk.Menu()
-        self.system_item.set_submenu(system_submenu)
-
-
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/info.png', 20, 20)
-        app_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        app_label = Gtk.Label(label="Hardware Info")
-
-
-        box.pack_start(app_icon, False, False, 0)
-        box.pack_start(app_label, False, False, 0)
-        box.show_all()
-        self.system_item.add(box)
-
-        cpu_item = Gtk.MenuItem()
-        cpu_item.set_sensitive(False)
+        self.main_box.pack_start(self.media_box, False, False, 0)
+        self.main_box.pack_start(self.app_box, False, False, 0)
+        self.main_box.pack_start(self.system_box, False, False, 0)
+        self.main_box.pack_start(self.power_box, False, False, 0)
         
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/cpu.png', 20, 20)
-        cpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        cpu_label = Gtk.Label(label="CPU: ")
-
-
-        box.pack_start(cpu_icon, False, False, 0)
-        box.pack_start(cpu_label, False, False, 0)
-        box.show_all()
-        cpu_item.add(box)
+        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+        self.main_box.pack_start(separator, False, False, 4)
         
-        cpu_name = Gtk.MenuItem()
-        cpu_name.set_sensitive(False)
-        cpu_name.set_label(f"CPU Name: {get_cpu_info()}")
+        self.main_box.pack_start(self.terminal_box, False, False, 0)
+        self.main_box.pack_start(self.hyprland_box, False, False, 0)
         
-        self.cpu_temp = Gtk.MenuItem()
-        self.cpu_temp.set_sensitive(False)
+
+    def create_menu_item(self, label_text, icon_path):
+        box = Gtk.EventBox()
+        box.set_above_child(False)
         
-        self.cpu_usage = Gtk.MenuItem()
-        self.cpu_usage.set_sensitive(False)
-
-
-        ram_item = Gtk.MenuItem()
-        ram_item.set_sensitive(False)
-
-        box_ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-        pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/ram.png', 20, 20)
-        ram_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-        ram_label = Gtk.Label(label="RAM: ")
-
-
-        box_.pack_start(ram_icon, False, False, 0)
-        box_.pack_start(ram_label, False, False, 0)
-        box_.show_all()
-        ram_item.add(box_)
-
-        self.ram_usage = Gtk.MenuItem()
-        self.ram_usage.set_sensitive(False)
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox.set_border_width(8)
         
-        self.used_ram = Gtk.MenuItem()
-        self.used_ram.set_sensitive(False)
-
-        check = check_gpu()
-
-        if check != '':
-
-            gpu_item = Gtk.MenuItem()
-            gpu_item.set_sensitive(False)
-
-            box__ = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
-
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size('app_images/gpu.png', 20, 20)
-            gpu_icon = Gtk.Image.new_from_pixbuf(pixbuf)
-
-            gpu_label = Gtk.Label(label = "GPU: ")
-
-
-            box__.pack_start(gpu_icon, False, False, 0)
-            box__.pack_start(gpu_label, False, False, 0)
-            box__.show_all()
-            gpu_item.add(box__)
-
-
-            gpu_name = Gtk.MenuItem(label=f"GPU Name: {get_nvidia_name()}")
-            gpu_name.set_sensitive(False)
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
+            icon = Gtk.Image.new_from_pixbuf(pixbuf)
+            hbox.pack_start(icon, False, False, 2)
+        except GLib.Error:
+            pass
             
-            self.gpu_temp = Gtk.MenuItem()
-            self.gpu_temp.set_sensitive(False)
-
-            self.gpu_usage = Gtk.MenuItem()
-            self.gpu_usage.set_sensitive(False)
+        label = Gtk.Label(label=label_text)
+        label.set_xalign(0)
+        hbox.pack_start(label, True, True, 2)
+        
+        if label_text != "Terminal":
+            arrow = Gtk.Image.new_from_icon_name("pan-end-symbolic", Gtk.IconSize.MENU)
+            hbox.pack_end(arrow, False, False, 2)
             
-            self.gpu_vram = Gtk.MenuItem()
-            self.gpu_vram.set_sensitive(False)
+        box.add(hbox)
+        
+        box.connect("enter-notify-event", self.on_hover_enter)
+        box.connect("leave-notify-event", self.on_hover_leave)
+        
+        return box
+    
+    def on_hover_enter(self, widget, event):
+        widget.get_style_context().add_class("menu-item-hover")
+        widget.set_state_flags(Gtk.StateFlags.PRELIGHT, True)
+        return False
+        
+    def on_hover_leave(self, widget, event):
+        widget.get_style_context().remove_class("menu-item-hover")
+        widget.unset_state_flags(Gtk.StateFlags.PRELIGHT)
+        return False
+        
+    def on_terminal_click(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            open_terminal(widget)
+            self.destroy()
+            Gtk.main_quit()
 
+    def on_hypr_click(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            exit_hypr(widget)
+            self.destroy()
+            Gtk.main_quit()
 
-            self.gpu_speed = Gtk.MenuItem()
-            self.gpu_speed.set_sensitive(False)
-
-            self.gpu_power = Gtk.MenuItem()
-            self.gpu_power.set_sensitive(False)
-
-
-        system_submenu.append(cpu_item)
-        system_submenu.append(cpu_name)
-        system_submenu.append(self.cpu_temp)
-        system_submenu.append(self.cpu_usage)
-        system_submenu.append(Gtk.SeparatorMenuItem())
-        system_submenu.append(ram_item)
-        system_submenu.append(self.ram_usage)
-        system_submenu.append(self.used_ram)
-        if check != '':
-            system_submenu.append(Gtk.SeparatorMenuItem())
-            system_submenu.append(gpu_item)
-            system_submenu.append(gpu_name)
-            system_submenu.append(self.gpu_temp)
-            system_submenu.append(self.gpu_usage)
-            system_submenu.append(self.gpu_vram)
-            system_submenu.append(self.gpu_speed)
-            system_submenu.append(self.gpu_power)
+    def build_submenu_window(self, title):
+        window = Gtk.Window(type=Gtk.WindowType.POPUP)
+        window.set_decorated(False)
+        window.set_resizable(False)
+        window.set_skip_taskbar_hint(True)
+        window.set_skip_pager_hint(True)
+        
+        screen = window.get_screen()
+        visual = screen.get_rgba_visual()
+        if visual and screen.is_composited():
+            window.set_visual(visual)
+            
+        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        window.add(vbox)
+        
+        window.connect("focus-out-event", lambda w, e: w.destroy())
+        window.connect("key-press-event", lambda w, e: w.destroy() if e.keyval == Gdk.KEY_Escape else None)
+        
+        return window, vbox
+    
+    def toggle_submenu(self, submenu_func, parent_widget, menu_id):
+        if menu_id in self.open_submenus and self.open_submenus[menu_id].get_visible():
+            self.open_submenus[menu_id].destroy()
+            del self.open_submenus[menu_id]
+        else:
+            for id_key in list(self.open_submenus.keys()):
+                if self.open_submenus[id_key] and self.open_submenus[id_key].get_visible():
+                    self.open_submenus[id_key].destroy()
+                    del self.open_submenus[id_key]
+            
+            self.show_submenu(submenu_func, parent_widget, menu_id)
+        
+    def show_submenu(self, submenu_func, parent_widget, menu_id):
+        window_x, window_y = self.get_position()
+        parent_alloc = parent_widget.get_allocation()
+        
+        x = window_x + parent_alloc.width
+        y = window_y + parent_alloc.y
+        
+        submenu = submenu_func()
+        submenu.move(x, y)
+        
+        self.open_submenus[menu_id] = submenu
+        
+        submenu.connect("destroy", lambda w: self.on_submenu_destroyed(menu_id))
+        
+        submenu.show_all()
+    
+    def on_submenu_destroyed(self, menu_id):
+        if menu_id in self.open_submenus:
+            del self.open_submenus[menu_id]
+            
+    def build_media_control_menu(self):
+        def create_submenu():
+            window, vbox = self.build_submenu_window("Media Control")
+            
+            items = [
+                ("Pause/Play", None, pause_play_func),
+                ("Reset", "app_images/reset.png", reset_func),
+                ("Fast Forward", "app_images/fast-forward.png", fast_forward_func),
+                ("Fast Backward", "app_images/fast-backward.png", backward_func),
+                ("Next Track", "app_images/next.png", next_track_func),
+                ("Previous Track", "app_images/previous.png", previous_track_func)
+            ]
+            
+            for label_text, icon_path, action_func in items:
+                item = self.create_submenu_item(label_text, icon_path)
+                item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
+                vbox.pack_start(item, False, False, 0)
+                
+            return window
+            
+        return create_submenu
+        
+    def build_application_menu(self):
+        def create_submenu():
+            window, vbox = self.build_submenu_window("Applications")
+            
+            scrolled_window = Gtk.ScrolledWindow()
+            scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+            scrolled_window.set_min_content_height(300)
+            scrolled_window.set_max_content_height(500)
+            scrolled_window.set_propagate_natural_height(True)
+            
+            apps_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+            scrolled_window.add(apps_box)
+            
+            apps = get_app_info()
+            for name, exec_cmd, icon in apps:
+                item = self.create_submenu_item(name, icon, use_theme_icon=True)
+                item.connect("button-press-event", lambda w, e, cmd=exec_cmd: self.on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
+                apps_box.pack_start(item, False, False, 0)
+            
+            vbox.pack_start(scrolled_window, True, True, 0)
+                
+            return window
+            
+        return create_submenu
+        
+    def build_power_menu(self):
+        def create_submenu():
+            window, vbox = self.build_submenu_window("Power Settings")
+            
+            items = [
+                ("Power Off", "app_images/power_off.png", shutdown_machine),
+                ("Reboot", "app_images/reboot.png", reboot_machine),
+                ("Lock", "app_images/lock.png", lock_machine),
+                ("Hibernate", "app_images/hibernate.png", hib_machine)
+            ]
+            
+            for label_text, icon_path, action_func in items:
+                item = self.create_submenu_item(label_text, icon_path)
+                item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
+                vbox.pack_start(item, False, False, 0)
+                
+            return window
+            
+        return create_submenu
+        
+    def build_system_info_menu(self):
+        def create_submenu():
+            window, vbox = self.build_submenu_window("Hardware Info")
+            
+            cpu_header = self.create_info_header("CPU", "app_images/cpu.png")
+            vbox.pack_start(cpu_header, False, False, 0)
+            
+            cpu_name = self.create_info_item(f"CPU Name: {get_cpu_info()}")
+            vbox.pack_start(cpu_name, False, False, 0)
+            
+            vbox.pack_start(self.cpu_temp, False, False, 0)
+            self.cpu_temp.set_margin_start(20)
+            self.cpu_temp.set_xalign(0)
+            
+            vbox.pack_start(self.cpu_usage, False, False, 0)
+            self.cpu_usage.set_margin_start(20)
+            self.cpu_usage.set_xalign(0)
+            
+            separator1 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+            vbox.pack_start(separator1, False, False, 4)
+            
+            ram_header = self.create_info_header("RAM", "app_images/ram.png")
+            vbox.pack_start(ram_header, False, False, 0)
+            
+            vbox.pack_start(self.ram_usage, False, False, 0)
+            self.ram_usage.set_margin_start(20)
+            self.ram_usage.set_xalign(0)
+            
+            vbox.pack_start(self.used_ram, False, False, 0)
+            self.used_ram.set_margin_start(20)
+            self.used_ram.set_xalign(0)
+            
+            check = check_gpu()
+            if check != '':
+                separator2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+                vbox.pack_start(separator2, False, False, 4)
+                
+                gpu_header = self.create_info_header("GPU", "app_images/gpu.png")
+                vbox.pack_start(gpu_header, False, False, 0)
+                
+                gpu_name = self.create_info_item(f"GPU Name: {get_nvidia_name()}")
+                vbox.pack_start(gpu_name, False, False, 0)
+                
+                vbox.pack_start(self.gpu_temp, False, False, 0)
+                self.gpu_temp.set_margin_start(20)
+                self.gpu_temp.set_xalign(0)
+                
+                vbox.pack_start(self.gpu_usage, False, False, 0)
+                self.gpu_usage.set_margin_start(20)
+                self.gpu_usage.set_xalign(0)
+                
+                vbox.pack_start(self.gpu_vram, False, False, 0)
+                self.gpu_vram.set_margin_start(20)
+                self.gpu_vram.set_xalign(0)
+                
+                vbox.pack_start(self.gpu_speed, False, False, 0)
+                self.gpu_speed.set_margin_start(20)
+                self.gpu_speed.set_xalign(0)
+                
+                vbox.pack_start(self.gpu_power, False, False, 0)
+                self.gpu_power.set_margin_start(20)
+                self.gpu_power.set_xalign(0)
+                
+            return window
+            
+        return create_submenu
+        
+    def create_submenu_item(self, label_text, icon_path=None, use_theme_icon=False):
+        box = Gtk.EventBox()
+        box.set_above_child(False)
+        
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
+        hbox.set_border_width(8)
+        
+        if icon_path:
+            if use_theme_icon:
+                try:
+                    pixbuf = Gtk.IconTheme.get_default().load_icon(icon_path, 32, 0)
+                    scaled_pixbuf = pixbuf.scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
+                    icon = Gtk.Image.new_from_pixbuf(scaled_pixbuf)
+                except GLib.Error:
+                    icon = Gtk.Image.new_from_icon_name(icon_path, Gtk.IconSize.SMALL_TOOLBAR)
+            else:
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
+                    icon = Gtk.Image.new_from_pixbuf(pixbuf)
+                except GLib.Error:
+                    icon = Gtk.Image.new_from_icon_name(icon_path, Gtk.IconSize.MENU)
+                    
+            hbox.pack_start(icon, False, False, 2)
+            
+        label = Gtk.Label(label=label_text)
+        label.set_xalign(0)
+        hbox.pack_start(label, True, True, 2)
+        
+        box.add(hbox)
+        
+        box.connect("enter-notify-event", self.on_hover_enter)
+        box.connect("leave-notify-event", self.on_hover_leave)
+        
+        return box
+        
+    def create_info_header(self, text, icon_path):
+        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
+        box.set_border_width(8)
+        
+        try:
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
+            icon = Gtk.Image.new_from_pixbuf(pixbuf)
+            box.pack_start(icon, False, False, 0)
+        except GLib.Error:
+            pass
+            
+        label = Gtk.Label(label=text)
+        label.set_xalign(0)
+        box.pack_start(label, False, False, 0)
+        
+        return box
+        
+    def create_info_item(self, text):
+        label = Gtk.Label(label=text)
+        label.set_xalign(0)
+        label.set_margin_start(20)
+        
+        return label
+        
+    def on_submenu_item_click(self, widget, event, callback):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            callback(widget)
+            for window in Gtk.Window.list_toplevels():
+                window.destroy()
+            Gtk.main_quit()
 
 
 def show_menu():
-    menu = App()
-
-    display = Gdk.Display.get_default()
-    seat = display.get_default_seat()
-    device = seat.get_pointer()
-    screen, x, y = device.get_position()
-
-    menu.popup(None, None, None, None, 0, Gtk.get_current_event_time())
-
-    def exit_on_close(*args):
-        Gtk.main_quit()
-
-    menu.connect("selection-done", exit_on_close)
+    css_provider = Gtk.CssProvider()
+    css = b"""
+    .menu-item-hover {
+        background-color: alpha(#3584e4, 0.3);
+    }
+    """
+    css_provider.load_from_data(css)
+    
+    Gtk.StyleContext.add_provider_for_screen(
+        Gdk.Screen.get_default(),
+        css_provider,
+        Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+    )
+    
+    app = App()
+    Gtk.main()
 
 show_menu()
-Gtk.main()
