@@ -16,9 +16,9 @@ def open_terminal(widget):
         try:
             process = subprocess.Popen(["alacritty"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~"))
         except FileNotFoundError:
-            print("Tried Kitty and Alacritty and None of them opened, make sure its installed on your system")
+            print("Tried Kitty and Alacritty and None of them opened, make sure its installed on your system!.")
 
-def exit_hypr(widget):
+def exit_(widget):
     subprocess.Popen(
         ["exit"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~")
     )

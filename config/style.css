@@ -1,0 +1,12 @@
+@import url("file:///home/naturalcapsule/.cache/wal/colors-waybar.css");
+
+
+.menu-item-hover {
+    background-color: @color1;
+}
+.Scroll-Window {
+    background-color: @color4;
+}
+.Submenu{
+    background-color: @color4;
+}

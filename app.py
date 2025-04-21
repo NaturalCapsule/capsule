@@ -69,14 +69,14 @@ class App(Gtk.Window):
     def build_menu(self):
         self.media_box = self.create_menu_item("Media Control", "app_images/music.png")
         self.terminal_box = self.create_menu_item("Terminal", "app_images/terminal.png")
-        self.hyprland_box = self.create_menu_item("Exit Hyprland", "app_images/hypr.png")
+        self.exit_box = self.create_menu_item("Exit", "app_images/exit.png")
         self.app_box = self.create_menu_item("Applications", "app_images/app.png")
         self.power_box = self.create_menu_item("Power Settings", "app_images/power.png")
         self.system_box = self.create_menu_item("Hardware Info", "app_images/info.png")
         
         self.media_submenu = self.build_media_control_menu()
         self.terminal_box.connect("button-press-event", self.on_terminal_click)
-        self.hyprland_box.connect("button-press-event", self.on_hypr_click)
+        self.exit_box.connect("button-press-event", self.on_exit_click)
         self.app_submenu = self.build_application_menu()
         self.power_submenu = self.build_power_menu()
         self.system_submenu = self.build_system_info_menu()
@@ -95,7 +95,7 @@ class App(Gtk.Window):
         self.main_box.pack_start(separator, False, False, 4)
         
         self.main_box.pack_start(self.terminal_box, False, False, 0)
-        self.main_box.pack_start(self.hyprland_box, False, False, 0)
+        self.main_box.pack_start(self.exit_box, False, False, 0)
         
 
     def create_menu_item(self, label_text, icon_path):
@@ -116,7 +116,7 @@ class App(Gtk.Window):
         label.set_xalign(0)
         hbox.pack_start(label, True, True, 2)
         
-        if label_text != "Terminal":
+        if label_text != "Terminal" and label_text != "Exit":
             arrow = Gtk.Image.new_from_icon_name("pan-end-symbolic", Gtk.IconSize.MENU)
             hbox.pack_end(arrow, False, False, 2)
             
@@ -143,9 +143,9 @@ class App(Gtk.Window):
             self.destroy()
             Gtk.main_quit()
 
-    def on_hypr_click(self, widget, event):
+    def on_exit_click(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
-            exit_hypr(widget)
+            exit_(widget)
             self.destroy()
             Gtk.main_quit()
 
@@ -155,6 +155,7 @@ class App(Gtk.Window):
         window.set_resizable(False)
         window.set_skip_taskbar_hint(True)
         window.set_skip_pager_hint(True)
+        window.get_style_context().add_class('Submenu')
         
         screen = window.get_screen()
         visual = screen.get_rgba_visual()
@@ -172,13 +173,19 @@ class App(Gtk.Window):
     def toggle_submenu(self, submenu_func, parent_widget, menu_id):
         if menu_id in self.open_submenus and self.open_submenus[menu_id].get_visible():
             self.open_submenus[menu_id].destroy()
-            del self.open_submenus[menu_id]
+            try:
+                del self.open_submenus[menu_id]
+            except KeyError:
+                pass
         else:
             for id_key in list(self.open_submenus.keys()):
                 if self.open_submenus[id_key] and self.open_submenus[id_key].get_visible():
                     self.open_submenus[id_key].destroy()
-                    del self.open_submenus[id_key]
-            
+                    try:
+                        del self.open_submenus[id_key]
+                    except KeyError:
+                        pass
+                    
             self.show_submenu(submenu_func, parent_widget, menu_id)
         
     def show_submenu(self, submenu_func, parent_widget, menu_id):
@@ -228,6 +235,7 @@ class App(Gtk.Window):
             window, vbox = self.build_submenu_window("Applications")
             
             scrolled_window = Gtk.ScrolledWindow()
+            scrolled_window.get_style_context().add_class("Scroll-Window")
             scrolled_window.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
             scrolled_window.set_min_content_height(300)
             scrolled_window.set_max_content_height(500)
@@ -404,11 +412,8 @@ class App(Gtk.Window):
 
 def show_menu():
     css_provider = Gtk.CssProvider()
-    css = b"""
-    .menu-item-hover {
-        background-color: alpha(#3584e4, 0.3);
-    }
-    """
+    with open ('config/style.css', 'r') as f:
+        css = f.read()
     css_provider.load_from_data(css)
     
     Gtk.StyleContext.add_provider_for_screen(
