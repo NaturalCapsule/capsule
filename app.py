@@ -1,4 +1,5 @@
 import gi
+import config
 
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
@@ -15,6 +16,7 @@ from app_info import get_app_info
 class App(Gtk.Window):
     def __init__(self):
         super().__init__(type=Gtk.WindowType.POPUP)
+        self.config = config
         
         self.set_position(Gtk.WindowPosition.MOUSE)
         self.set_skip_taskbar_hint(True)
@@ -22,7 +24,8 @@ class App(Gtk.Window):
         self.set_keep_above(True)
         self.set_decorated(False)
         self.set_resizable(False)
-        self.set_app_paintable(True)
+        if self.config.use_blur:
+            self.set_app_paintable(True)
         
         screen = self.get_screen()
         visual = screen.get_rgba_visual()
@@ -44,7 +47,7 @@ class App(Gtk.Window):
         self.add(self.main_box)
         
         self.open_submenus = {}
-        
+
         self.build_menu()
         
         self.connect("focus-out-event", self.on_focus_out)
@@ -144,7 +147,7 @@ class App(Gtk.Window):
         
     def on_terminal_click(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
-            open_terminal(widget)
+            open_terminal(widget, self.config.terminal)
             self.destroy()
             Gtk.main_quit()
 
@@ -156,7 +159,7 @@ class App(Gtk.Window):
 
     def on_fileM_click(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
-            open_fileM(widget)
+            open_fileM(widget, self.config.file_manager)
             self.destroy()
             Gtk.main_quit()
 
