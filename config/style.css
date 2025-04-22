@@ -1,5 +1,8 @@
 @import url("file:///home/naturalcapsule/.cache/wal/colors-waybar.css");
 
+.window {
+    
+}
 
 .menu-item-hover {
     background-color: @color1;

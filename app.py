@@ -26,6 +26,7 @@ class App(Gtk.Window):
         self.set_resizable(False)
         if self.config.use_blur:
             self.set_app_paintable(True)
+        self.get_style_context().add_class("window")
         
         screen = self.get_screen()
         visual = screen.get_rgba_visual()
