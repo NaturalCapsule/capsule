@@ -23,6 +23,19 @@ def exit_(widget):
         ["exit"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~")
     )
 
+def open_fileM(widget):
+    try:
+        subprocess.Popen(
+            ["pcmanfm"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~")
+        )
+    except FileNotFoundError:
+        try:
+            subprocess.Popen(["thunar"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~"))
+        except FileNotFoundError:
+            try:
+                subprocess.Popen(["dolphin"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell = True, cwd=os.path.expanduser("~"))
+            except FileNotFoundError:
+                print("Tried pcmanfm, thunar and dolphin, None of them worked, make sure its installed on your system")
 
 def previous_track_func(widget):
     os.system("playerctl previous")

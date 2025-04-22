@@ -58,7 +58,7 @@ class RunTimers:
             self.ram_usage.set_label(f"RAM Usage: {ram_usage_val}%")
         
         if self.should_update('used_ram', used_ram_val, 0.01):
-            self.used_ram.set_label(f"Used RAM: {used_ram_val}GB")
+            self.used_ram.set_label(f"Used RAM: {used_ram_val}GB/{get_total_ram()}GB")
         
         if self.gpu_temp is not None:
             if self.should_update('gpu_temp', gpu_temp_val, 2):
@@ -68,7 +68,7 @@ class RunTimers:
                 self.gpu_usage.set_label(f"GPU Usage: {gpu_usage_val}%")
             
             if self.should_update('gpu_vram', gpu_vram_val, 0.01):
-                self.gpu_vram.set_label(f"GPU VRAM: {gpu_vram_val}MB/{get_nvidia_total_vram()}GB")
+                self.gpu_vram.set_label(f"GPU VRAM: {gpu_vram_val}GB/{get_nvidia_total_vram()}GB")
             
             if self.should_update('gpu_speed', gpu_speed_val, 2):
                 self.gpu_speed.set_label(f"GPU Fan Speed: {gpu_speed_val} RPM")

@@ -3,11 +3,13 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf, Pango
-from app_info import get_app_info
+from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+from timers import RunTimers
+
 from actions import *
 from sys_info import *
-from timers import RunTimers
+
+from app_info import get_app_info
 
 
 class App(Gtk.Window):
@@ -70,6 +72,7 @@ class App(Gtk.Window):
         self.media_box = self.create_menu_item("Media Control", "app_images/music.png")
         self.terminal_box = self.create_menu_item("Terminal", "app_images/terminal.png")
         self.exit_box = self.create_menu_item("Exit", "app_images/exit.png")
+        self.file_manager_box = self.create_menu_item("Open File Manager", "app_images/folder.png")
         self.app_box = self.create_menu_item("Applications", "app_images/app.png")
         self.power_box = self.create_menu_item("Power Settings", "app_images/power.png")
         self.system_box = self.create_menu_item("Hardware Info", "app_images/info.png")
@@ -77,6 +80,7 @@ class App(Gtk.Window):
         self.media_submenu = self.build_media_control_menu()
         self.terminal_box.connect("button-press-event", self.on_terminal_click)
         self.exit_box.connect("button-press-event", self.on_exit_click)
+        self.file_manager_box.connect("button-press-event", self.on_fileM_click)
         self.app_submenu = self.build_application_menu()
         self.power_submenu = self.build_power_menu()
         self.system_submenu = self.build_system_info_menu()
@@ -95,8 +99,9 @@ class App(Gtk.Window):
         self.main_box.pack_start(separator, False, False, 4)
         
         self.main_box.pack_start(self.terminal_box, False, False, 0)
+        self.main_box.pack_start(self.file_manager_box, False, False, 0)
         self.main_box.pack_start(self.exit_box, False, False, 0)
-        
+
 
     def create_menu_item(self, label_text, icon_path):
         box = Gtk.EventBox()
@@ -116,7 +121,7 @@ class App(Gtk.Window):
         label.set_xalign(0)
         hbox.pack_start(label, True, True, 2)
         
-        if label_text != "Terminal" and label_text != "Exit":
+        if label_text != "Terminal" and label_text != "Exit" and label_text != "Open File Manager":
             arrow = Gtk.Image.new_from_icon_name("pan-end-symbolic", Gtk.IconSize.MENU)
             hbox.pack_end(arrow, False, False, 2)
             
@@ -146,6 +151,12 @@ class App(Gtk.Window):
     def on_exit_click(self, widget, event):
         if event.type == Gdk.EventType.BUTTON_PRESS:
             exit_(widget)
+            self.destroy()
+            Gtk.main_quit()
+
+    def on_fileM_click(self, widget, event):
+        if event.type == Gdk.EventType.BUTTON_PRESS:
+            open_fileM(widget)
             self.destroy()
             Gtk.main_quit()
 

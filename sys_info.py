@@ -36,7 +36,8 @@ def get_nvidia_used_vram():
 ,
                                 stdout=subprocess.PIPE, text=True)
         used_vram = result.stdout.strip()
-        return f"{used_vram}"
+        used_vram = int(used_vram) / 1000
+        return f"{used_vram:.2f}"
     except FileNotFoundError:
         return ''
 

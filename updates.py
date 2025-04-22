@@ -40,7 +40,7 @@ def update_nvidia_fanspeed(gpu_speed):
 def update_nvidia_usedVram(gpu_vram):
     used = get_nvidia_used_vram()
     total = get_nvidia_total_vram()
-    gpu_vram.set_label(f"GPU VRAM: {used}MB/{total}GB")
+    gpu_vram.set_label(f"GPU VRAM: {used}GB/{total}GB")
     return True
 
 def update_nvidia_powerdraw(gpu_power):

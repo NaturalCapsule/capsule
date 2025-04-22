@@ -3,10 +3,15 @@
 
 .menu-item-hover {
     background-color: @color1;
+    transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+
 }
 .Scroll-Window {
     background-color: @color4;
+    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
+
 }
 .Submenu{
     background-color: @color4;
+    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
 }
