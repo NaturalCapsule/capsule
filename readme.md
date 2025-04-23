@@ -1,6 +1,6 @@
-# Capsule
+# 💊 Capsule
 
-> ![App](app_images/capsule.png)
+> ![App](repo_images/capsule.png)
 
 **Capsule** is a modern, customizable system panel built for Linux using Python, GTK and D-Bus. It provides essential system info, media control, and more — all in a clean, responsive UI.
 
