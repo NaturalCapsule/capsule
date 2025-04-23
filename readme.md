@@ -15,9 +15,16 @@
   - Click to reveal title, artist, album art, and control buttons (play/pause, forward, backward, reset)
   - Thumbnail image auto-updates and appears as a rounded preview
 - 🖥️  **Hardware Info**: shows CPU, GPU and RAM usages temps, names, etc
-- 🎨 **Custom Styling**: Easily modify the look and feel via `config/style.css`
 - 💻 **Terminal**: Lauch your favorite terminal emulator
 - 📂 **File Manager**: Lauch your favorite file manager emulator
+- 🎨 **Custom Styling**: Easily modify the look and feel via `config/style.css`
+---
+
+
+## 📸 Screenshots
+
+> ![ScreenShots](repo_images/2.png) ![ScreenShots](repo_images/1.png) ![ScreenShots](repo_images/3.png) ![ScreenShots](repo_images/4.png) ![ScreenShots](repo_images/5.png)
+
 ---
 
 ## 🛠️ Built With
