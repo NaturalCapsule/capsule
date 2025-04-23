@@ -16,7 +16,7 @@
   - Thumbnail image auto-updates and appears as a rounded preview
 - 🖥️  **Hardware Info**: shows CPU, GPU and RAM usages temps, names, etc
 - 💻 **Terminal**: Lauch your favorite terminal emulator
-- 📂 **File Manager**: Lauch your favorite file manager emulator
+- 📂 **File Manager**: Lauch your favorite file manager
 - 🎨 **Custom Styling**: Easily modify the look and feel via `config/style.css`
 ---
 
