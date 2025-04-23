@@ -5,7 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
-from timers import RunTimers
+from timers import RunTimers, update_media_
 
 from actions import *
 from sys_info import *
@@ -33,6 +33,9 @@ class App(Gtk.Window):
         if visual and screen.is_composited():
             self.set_visual(visual)
         
+        self.title_label = Gtk.Label()
+        self.media_image = Gtk.Image()
+        
         self.cpu_temp = Gtk.Label(label="CPU Temperature: Updating...")
         self.cpu_usage = Gtk.Label(label="CPU Usage: Updating...")
         self.ram_usage = Gtk.Label(label="RAM Usage: Updating...")
@@ -57,6 +60,8 @@ class App(Gtk.Window):
         RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, 
                   self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, 
                   self.gpu_power)
+        
+        update_media_(self.title_label, self.media_image)
         
         self.show_all()
 
@@ -176,9 +181,12 @@ class App(Gtk.Window):
         visual = screen.get_rgba_visual()
         if visual and screen.is_composited():
             window.set_visual(visual)
+
             
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         window.add(vbox)
+        
+
         
         window.connect("focus-out-event", lambda w, e: w.destroy())
         window.connect("key-press-event", lambda w, e: w.destroy() if e.keyval == Gdk.KEY_Escape else None)
@@ -236,6 +244,18 @@ class App(Gtk.Window):
                 ("Previous Track", "app_images/previous.png", previous_track_func)
             ]
             
+            self.title_label.set_margin_start(20)
+            self.title_label.set_margin_end(20)
+            self.title_label.set_xalign(0)
+            
+            hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+            vbox.pack_start(hbox, False, False, 0)
+            
+            hbox.pack_start(self.media_image, False, False, 10)
+            hbox.pack_start(self.title_label, False, False, 0)
+            separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+            vbox.pack_start(separator, False, False, 0)
+            
             for label_text, icon_path, action_func in items:
                 item = self.create_submenu_item(label_text, icon_path)
                 item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
@@ -281,6 +301,8 @@ class App(Gtk.Window):
                 ("Lock", "app_images/lock.png", lock_machine),
                 ("Hibernate", "app_images/hibernate.png", hib_machine)
             ]
+
+
             
             for label_text, icon_path, action_func in items:
                 item = self.create_submenu_item(label_text, icon_path)

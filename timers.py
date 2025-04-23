@@ -3,6 +3,10 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 import threading
 from sys_info import *
+from updates import update_media
+
+def update_media_(label, image):
+    GLib.timeout_add(400, update_media, label, image)
 
 class RunTimers:
     def __init__(self, cpu_temp, cpu_usage, ram_usage, used_ram, gpu_temp=None, 
@@ -16,6 +20,7 @@ class RunTimers:
         self.gpu_vram = gpu_vram
         self.gpu_speed = gpu_speed
         self.gpu_power = gpu_power
+
         
         self.prev_values = {}
         
@@ -32,6 +37,7 @@ class RunTimers:
         cpu_usage_val = get_cpu_usage()
         ram_usage_val = get_ram_usage()
         used_ram_val = get_used_ram()
+        
         
         if hasattr(self, 'gpu_temp') and self.gpu_temp is not None:
             gpu_temp_val = get_nvidia_temp()
