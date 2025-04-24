@@ -55,7 +55,7 @@ and
 
 3. **Launch**
    ```bash
-   GDK_BACKEND=x11 python app.py
+   GDK_BACKEND=wayland python app.py
    ```
 
 4. **Enjoy!**
