@@ -6,6 +6,7 @@ gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
 from timers import RunTimers, update_media_
+from media import MediaPlayerMonitor
 
 from actions import *
 from sys_info import *
@@ -348,19 +349,28 @@ class App(Gtk.Window):
     def build_media_control_menu(self):
         def create_submenu():
             window, vbox = self.build_submenu_window("Media Control")
+
+            text = '▶'
+            media = MediaPlayerMonitor()
+            if media.playback_status == 'Paused':
+                text = '▶'
+            elif media.playback_status == 'Playing':
+                text = '❚❚'
             
             items = [
-                ("Pause/Play", None, pause_play_func),
-                ("Reset", "app_images/reset.png", reset_func),
-                ("Fast Forward", "app_images/fast-forward.png", fast_forward_func),
-                ("Fast Backward", "app_images/fast-backward.png", backward_func),
-                ("Next Track", "app_images/next.png", next_track_func),
-                ("Previous Track", "app_images/previous.png", previous_track_func)
+                ("⏮", None, backward_func),
+                (text, None, pause_play_func),
+                ("⏭", None, fast_forward_func),
+                ("<<", None, previous_track_func),
+                (" ↺", None, reset_func),
+                (">>", None, next_track_func),
             ]
             
             self.title_label.set_margin_start(20)
             self.title_label.set_margin_end(20)
             self.title_label.set_xalign(0)
+
+            grid = Gtk.Grid()
             
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             vbox.pack_start(hbox, False, False, 0)
@@ -371,13 +381,25 @@ class App(Gtk.Window):
             vbox.pack_start(separator, False, False, 0)
             
             window.submenu_items = []
+            
             window.current_selected_index = 0
+            
+            column = 0
+            row = 0
+            count = 0
+            
+            vbox.pack_start(grid, False, False, 0)
             
             for label_text, icon_path, action_func in items:
                 item = self.create_submenu_item(label_text, icon_path)
                 item.action_func = action_func
                 item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
-                vbox.pack_start(item, False, False, 0)
+                if count == 3:
+                    column += 1
+                    row = 0
+                grid.attach(item, row, column, 1, 1)
+                row += 1
+                count += 1
                 window.submenu_items.append(item)
                 
             def navigate(direction):
@@ -409,8 +431,8 @@ class App(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
             
-            if window.submenu_items:
-                select_item(0)
+            # if window.submenu_items:
+            #     select_item(0)
                 
             return window
             
@@ -478,8 +500,8 @@ class App(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
             
-            if window.submenu_items:
-                select_item(0)
+            # if window.submenu_items:
+            #     select_item(0)
                 
             return window
             
@@ -535,8 +557,8 @@ class App(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
             
-            if window.submenu_items:
-                select_item(0)
+            # if window.submenu_items:
+            #     select_item(0)
                 
             return window
             

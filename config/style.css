@@ -1,5 +1,8 @@
+@import url("file:///home/naturalcapsule/.cache/wal/colors-waybar.css");
+
 .window {
-    color: purple;
+    color: @color1;
+    background-color: @color4;
 }
 
 .sysInfo {
@@ -16,14 +19,15 @@
 
 .menu-item-hover {
     color: white;
-    background-color: black;
+    background-color: @color1;
     transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
 
 }
 .Scroll-Window {
-    background-color: black;
+    background-color: @color4;
+
 }
 
 .Submenu{
-    background-color: white;
+    background-color: @color4;
 }

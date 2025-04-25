@@ -12,7 +12,7 @@ from round_image import create_circular_pixbuf
 
 media = MediaPlayerMonitor()
 
-title_name, player_name = '', ''
+title_name, player_name = None, None
 
 
 def update_cpu_temp(cpu_temp):
