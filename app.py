@@ -362,7 +362,7 @@ class App(Gtk.Window):
                 (text, None, pause_play_func),
                 ("⏭", None, fast_forward_func),
                 ("<<", None, previous_track_func),
-                (" ↺", None, reset_func),
+                ("↺", None, reset_func),
                 (">>", None, next_track_func),
             ]
             
@@ -512,10 +512,10 @@ class App(Gtk.Window):
             window, vbox = self.build_submenu_window("Power Settings")
             
             items = [
-                ("Power Off", "app_images/power_off.png", shutdown_machine),
-                ("Reboot", "app_images/reboot.png", reboot_machine),
-                ("Lock", "app_images/lock.png", lock_machine),
-                ("Hibernate", "app_images/hibernate.png", hib_machine)
+                ("Power Off         ⏻", None, shutdown_machine),
+                ("Reboot               ⟳", None, reboot_machine),
+                ("Lock                    🗝", None, lock_machine),
+                ("Hibernate        ❄", None, hib_machine)
             ]
             
             window.submenu_items = []
