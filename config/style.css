@@ -1,8 +1,5 @@
-@import url("file:///home/naturalcapsule/.cache/wal/colors-waybar.css");
-
 .window {
-    color: @color1;
-    background-color: @color4;
+    color: purple;
 }
 
 .sysInfo {
@@ -12,22 +9,22 @@
 .Media-Title{
 
 }
-
+ 
 .Media-Image {
-
+ 
 }
-
+ 
 .menu-item-hover {
     color: white;
-    background-color: @color1;
+    background-color: black;
     transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
-
 }
+ 
 .Scroll-Window {
-    background-color: @color4;
-
+    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
+    background-color: black; 
 }
-
+ 
 .Submenu{
-    background-color: @color4;
-}
+    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
+    background-color: white;

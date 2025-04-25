@@ -54,6 +54,12 @@ and
    ```
 
 3. **Launch**
+   If you don't want keyboard support launch with this command (this will make the app show at your screen position)
+   ```bash
+   GDK_BACKEND=x11 python app.py
+   ```
+
+   If you want keyboard support launch it with this command
    ```bash
    GDK_BACKEND=wayland python app.py
    ```
