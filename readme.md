@@ -41,7 +41,7 @@
 make sure these packages are installed on your system
 `sudo pacman -S python-gobject gtk3 playerctl hyprlock`
 and
-`pip install pyGObject cairo python-dbus`
+`pip install pyGObject cairo python-dbus configparser`
 
 1. **Clone the repo**
    ```bash
