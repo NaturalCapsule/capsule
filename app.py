@@ -111,18 +111,18 @@ class App(Gtk.Window):
     def on_key_press_(self, widget, event):
         key = Gdk.keyval_name(event.keyval)
 
-        children = self.listbox.get_children()
-        if not children:
-            return
+        # children = self.listbox.get_children()
+        # if not children:
+        #     return
 
-        current_row = self.listbox.get_focus_child()
-        if not current_row:
-            current_row = children[0]
+        # current_row = self.listbox.get_focus_child()
+        # if not current_row:
+        #     current_row = children[0]
 
-        try:
-            current_index = children.index(current_row)
-        except ValueError:
-            current_index = 0
+        # try:
+        #     current_index = children.index(current_row)
+        # except ValueError:
+        #     current_index = 0
 
         if key == "Return":  # Return = Enter key
             selected_row = self.listbox.get_selected_row()
@@ -130,15 +130,15 @@ class App(Gtk.Window):
                 self.run_selected_program(selected_row)
             return True
 
-        if key == "j":
-            new_index = (current_index - 1) % len(children)
-        elif key == "k":
-            new_index = (current_index + 1) % len(children)
-        else:
-            return
+        # if key == "j":
+        #     new_index = (current_index - 1) % len(children)
+        # elif key == "k":
+        #     new_index = (current_index + 1) % len(children)
+        # else:
+        #     return
 
-        self.listbox.select_row(children[new_index])
-        children[new_index].grab_focus()
+        # self.listbox.select_row(children[new_index])
+        # children[new_index].grab_focus()
 
     def run_selected_program(self, row):
         event_box = row.get_child()
@@ -448,12 +448,17 @@ class App(Gtk.Window):
             elif media.playback_status == 'Playing':
                 text = '❚❚'
             
+            if text == '❚❚':
+                reset = ' ↺'
+            else:
+                reset = '↺'
+            
             items = [
                 ("⏮", None, backward_func),
                 (text, None, pause_play_func),
                 ("⏭", None, fast_forward_func),
                 ("<<", None, previous_track_func),
-                ("↺", None, reset_func),
+                (reset, None, reset_func),
                 (">>", None, next_track_func),
             ]
             
