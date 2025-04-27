@@ -3,8 +3,18 @@ import os
 import shlex
 
 def launch_app(widget, exec):
-    cmd = shlex.split(exec)
-    subprocess.Popen(cmd, start_new_session = True, cwd = os.path.expanduser("~"))
+    if exec == 'kitty' or exec =='htop' or exec == 'alacritty' or exec == 'yazi' or exec == 'vim' or exec == 'nvim':
+        subprocess.Popen(["kitty", "-e", "sh", "-c", exec])
+    else:
+        cmd = shlex.split(exec)
+        subprocess.Popen(cmd, start_new_session = True, cwd = os.path.expanduser("~"))
+
+def launch_app_(exec):
+    if exec == 'kitty' or exec =='htop' or exec == 'alacritty' or exec == 'yazi' or exec == 'vim' or exec == 'nvim':
+        subprocess.Popen(["kitty", "-e", "sh", "-c", exec])
+    else:
+        cmd = shlex.split(exec)
+        subprocess.Popen(cmd, start_new_session = True, cwd = os.path.expanduser("~"))
 
 def open_terminal(widget, term):
     if term is not None or term != '' or len(term) != 0:

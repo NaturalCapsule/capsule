@@ -33,6 +33,19 @@ class App(Gtk.Window):
         visual = screen.get_rgba_visual()
         if visual and screen.is_composited():
             self.set_visual(visual)
+
+        self.search_entry = Gtk.SearchEntry()
+        self.search_entry.get_style_context().add_class('App-Search')
+        self.search_entry.connect("changed", self.on_search_changed)
+
+
+        self.listbox = Gtk.ListBox()
+        self.listbox.get_style_context().add_class('App-List')
+        self.listbox.connect("key-press-event", self.on_key_press_)
+
+        self.listbox.set_hexpand(False)
+        self.listbox.set_vexpand(False)
+
         
         self.title_label = Gtk.Label()
         self.title_label.get_style_context().add_class("Media-Title")
@@ -82,10 +95,11 @@ class App(Gtk.Window):
                   self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, 
                   self.gpu_power)
         
-        update_media_(self.title_label, self.media_image)
         
-        # if self.menu_items:
-        #     self.select_menu_item(0)
+        self.listbox.set_filter_func(self.filter_func, None)
+        self.listbox.connect("row-selected", self.on_row_selected)
+        
+        update_media_(self.title_label, self.media_image)
             
         self.show_all()
 
@@ -93,7 +107,51 @@ class App(Gtk.Window):
         self.destroy()
         Gtk.main_quit()
         return False
-        
+
+    def on_key_press_(self, widget, event):
+        key = Gdk.keyval_name(event.keyval)
+
+        children = self.listbox.get_children()
+        if not children:
+            return
+
+        current_row = self.listbox.get_focus_child()
+        if not current_row:
+            current_row = children[0]
+
+        try:
+            current_index = children.index(current_row)
+        except ValueError:
+            current_index = 0
+
+        if key == "Return":  # Return = Enter key
+            selected_row = self.listbox.get_selected_row()
+            if selected_row:
+                self.run_selected_program(selected_row)
+            return True
+
+        if key == "j":
+            new_index = (current_index - 1) % len(children)
+        elif key == "k":
+            new_index = (current_index + 1) % len(children)
+        else:
+            return
+
+        self.listbox.select_row(children[new_index])
+        children[new_index].grab_focus()
+
+    def run_selected_program(self, row):
+        event_box = row.get_child()
+        box = event_box.get_child()
+
+        label = box.get_children()[1]
+        app_name = label.get_text()
+
+        print(f"Launching {app_name}...")
+        launch_app_(self.apps_.get(app_name))
+        exit(0)
+
+
     def on_key_press(self, widget, event):
         if event.keyval == Gdk.KEY_Escape:
             if self.open_submenus:
@@ -161,6 +219,40 @@ class App(Gtk.Window):
         if 0 <= index < len(self.menu_items):
             self.menu_items[index].get_style_context().add_class("menu-item-hover")
             self.menu_items[index].set_state_flags(Gtk.StateFlags.PRELIGHT, True)
+
+    def on_row_selected(self, listbox, row):
+        for child in listbox.get_children():
+            child.get_style_context().remove_class("App-List-selected-row")
+
+        if row:
+            row.get_style_context().add_class("App-List-selected-row")
+
+    def on_search_changed(self, search_entry):
+        self.listbox.invalidate_filter()
+
+    def filter_func(self, row, data):
+        if not row:
+            return False
+
+        event_box = row.get_child()
+        if not event_box:
+            return False
+
+        hbox = event_box.get_child()
+        if not hbox:
+            return False
+
+        label = None
+        for child in hbox.get_children():
+            if isinstance(child, Gtk.Label):
+                label = child
+                break
+
+        if not label:
+            return False
+
+        query = self.search_entry.get_text().lower()
+        return query in label.get_text().lower()
 
     def build_menu(self):
         self.media_box = self.create_menu_item("Media Control", "app_images/music.png")
@@ -298,7 +390,6 @@ class App(Gtk.Window):
         vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         window.add(vbox)
         
-        # window.connect("focus-out-event", lambda w, e: w.destroy())
         window.connect("key-press-event", lambda w, e: w.destroy() if e.keyval == Gdk.KEY_Escape else None)
         
         return window, vbox
@@ -430,9 +521,7 @@ class App(Gtk.Window):
             
             window.navigate = navigate
             window.activate_selected = activate_selected
-            
-            # if window.submenu_items:
-            #     select_item(0)
+
                 
             return window
             
@@ -440,6 +529,7 @@ class App(Gtk.Window):
         
     def build_application_menu(self):
         def create_submenu():
+            self.apps_ = {}
             window, vbox = self.build_submenu_window("Applications")
             
             scrolled_window = Gtk.ScrolledWindow()
@@ -449,21 +539,23 @@ class App(Gtk.Window):
             scrolled_window.set_max_content_height(500)
             scrolled_window.set_propagate_natural_height(True)
             
-            apps_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            scrolled_window.add(apps_box)
             
             window.submenu_items = []
             window.current_selected_index = 0
+            
+            scrolled_window.add(self.listbox)
+            vbox.pack_start(self.search_entry, True, True, 0)
+            vbox.pack_start(scrolled_window, True, True, 0)
+            
             
             apps = get_app_info()
             for name, exec_cmd, icon in apps:
                 item = self.create_submenu_item(name, icon, use_theme_icon=True)
                 item.exec_cmd = exec_cmd
                 item.connect("button-press-event", lambda w, e, cmd=exec_cmd: self.on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
-                apps_box.pack_start(item, False, False, 0)
-                window.submenu_items.append(item)
-            
-            vbox.pack_start(scrolled_window, True, True, 0)
+                self.apps_[name] = exec_cmd
+                self.listbox.add(item)
+
             
             def navigate(direction):
                 if direction == 'up' and window.current_selected_index > 0:
@@ -500,9 +592,8 @@ class App(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
             
-            # if window.submenu_items:
-            #     select_item(0)
-                
+
+            
             return window
             
         return create_submenu
@@ -556,9 +647,7 @@ class App(Gtk.Window):
             
             window.navigate = navigate
             window.activate_selected = activate_selected
-            
-            # if window.submenu_items:
-            #     select_item(0)
+
                 
             return window
             
@@ -643,7 +732,7 @@ class App(Gtk.Window):
             return window
             
         return create_submenu
-        
+
         
     def create_submenu_item(self, label_text, icon_path=None, use_theme_icon=False):
         box = Gtk.EventBox()
@@ -738,7 +827,7 @@ def show_menu():
         css_provider,
         Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
-    
+ 
     app = App()
     Gtk.main()
 

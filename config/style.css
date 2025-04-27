@@ -1,31 +1,56 @@
 .window {
-    color: purple;
+    color: white;
 }
 
 .sysInfo {
-    color: black;
+    color: white;
 }
 
 .Media-Title{
 
 }
- 
+
 .Media-Image {
- 
+
 }
- 
+
+
+.App-List-selected-row {
+    background-color: white;
+    color: black;
+}
+
+.App-List {
+    background-color: purple;
+    color: white;
+}
+
+.App-Search {
+    background-color: #eceff4;
+    color: #2e3440;
+    border-radius: 5px;
+    padding: 5px;
+    border: 1px solid #d8dee9;
+    box-shadow: none;
+}
+
+.App-Search:focus {
+    background-color: #d8dee9;
+    border: 2px;
+    box-shadow: none;
+}
+
 .menu-item-hover {
     color: white;
-    background-color: black;
+    background-color: peru;
     transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682);
+
 }
- 
 .Scroll-Window {
-    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
-    background-color: black; 
+    background-color: black;
+
 }
- 
+
 .Submenu{
-    /* transition: all 0.3s cubic-bezier(.55,-0.68,.48,1.682); */
-    background-color: white;
+    background-color: black;
 }
