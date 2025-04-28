@@ -509,7 +509,6 @@ class Capsule(Gtk.Window):
             window.activate_selected = activate_selected
             
 
-            
             return window
             
         return create_submenu

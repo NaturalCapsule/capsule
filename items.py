@@ -81,6 +81,7 @@ def create_submenu_item(label_text, icon_path=None, use_theme_icon=False, on_sub
         hbox.pack_start(icon, False, False, 2)
         
     label = Gtk.Label(label=label_text)
+    label.get_style_context().add_class('Submenu-Button') # yeah this is a label but it acts like a button so its a button, shut up
     label.set_xalign(0)
     hbox.pack_start(label, True, True, 2)
     
