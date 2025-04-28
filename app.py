@@ -1,20 +1,24 @@
 import gi
 import config
-
+import widgets
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
-from gi.repository import Gtk, Gdk, GLib, GdkPixbuf
+from gi.repository import Gtk, Gdk
 from timers import RunTimers, update_media_
 from media import MediaPlayerMonitor
 
 from actions import *
 from sys_info import *
+from items import *
+from clicks import *
+from effects import *
+
 
 from app_info import get_app_info
 
 
-class App(Gtk.Window):
+class Capsule(Gtk.Window):
     def __init__(self):
         super().__init__(type=Gtk.WindowType.POPUP)
         self.config = config
@@ -34,52 +38,21 @@ class App(Gtk.Window):
         if visual and screen.is_composited():
             self.set_visual(visual)
 
-        self.search_entry = Gtk.SearchEntry()
-        self.search_entry.get_style_context().add_class('App-Search')
-        self.search_entry.connect("changed", self.on_search_changed)
+        self.search_entry = widgets.search_entry
+        self.listbox = widgets.listbox
+        self.title_label = widgets.title_label
+        self.media_image = widgets.media_image
+        self.cpu_temp = widgets.cpu_temp
+        self.cpu_usage = widgets.cpu_usage
+        self.ram_usage = widgets.ram_usage
+        self.used_ram = widgets.used_ram
+        self.gpu_temp = widgets.gpu_temp
+        self.gpu_usage = widgets.gpu_usage
+        self.gpu_vram = widgets.gpu_vram
+        self.gpu_speed = widgets.gpu_speed
+        self.gpu_power = widgets.gpu_power
 
 
-        self.listbox = Gtk.ListBox()
-        self.listbox.get_style_context().add_class('App-List')
-        self.listbox.connect("key-press-event", self.on_key_press_)
-
-        self.listbox.set_hexpand(False)
-        self.listbox.set_vexpand(False)
-
-        
-        self.title_label = Gtk.Label()
-        self.title_label.get_style_context().add_class("Media-Title")
-        
-        self.media_image = Gtk.Image()
-        self.media_image.get_style_context().add_class("Media-Image")
-
-        self.cpu_temp = Gtk.Label(label="CPU Temperature: Updating...")
-        self.cpu_temp.get_style_context().add_class('sysInfo')
-
-        self.cpu_usage = Gtk.Label(label="CPU Usage: Updating...")
-        self.cpu_usage.get_style_context().add_class('sysInfo')
-
-        self.ram_usage = Gtk.Label(label="RAM Usage: Updating...")
-        self.ram_usage.get_style_context().add_class('sysInfo')
-        
-        self.used_ram = Gtk.Label(label="Used RAM: Updating...")
-        self.used_ram.get_style_context().add_class('sysInfo')
-        
-        self.gpu_temp = Gtk.Label(label="GPU Temperature: Updating...")
-        self.gpu_temp.get_style_context().add_class('sysInfo')
-
-        self.gpu_usage = Gtk.Label(label="GPU Usage: Updating...")
-        self.gpu_usage.get_style_context().add_class('sysInfo')
-
-        self.gpu_vram = Gtk.Label(label="GPU VRAM: Updating...")
-        self.gpu_vram.get_style_context().add_class('sysInfo')
-
-        self.gpu_speed = Gtk.Label(label="GPU Speed: Updating...")
-        self.gpu_speed.get_style_context().add_class('sysInfo')
-
-        self.gpu_power = Gtk.Label(label="GPU Power: Updating...")
-        self.gpu_power.get_style_context().add_class('sysInfo')
-        
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(self.main_box)
         
@@ -90,6 +63,8 @@ class App(Gtk.Window):
 
         self.build_menu()
         self.connect("key-press-event", self.on_key_press)
+        self.listbox.connect("key-press-event", self.on_key_press_)
+        self.search_entry.connect("changed", self.on_search_changed)
         
         RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, 
                   self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, 
@@ -124,7 +99,7 @@ class App(Gtk.Window):
         # except ValueError:
         #     current_index = 0
 
-        if key == "Return":  # Return = Enter key
+        if key == "Return":
             selected_row = self.listbox.get_selected_row()
             if selected_row:
                 self.run_selected_program(selected_row)
@@ -144,11 +119,15 @@ class App(Gtk.Window):
         event_box = row.get_child()
         box = event_box.get_child()
 
-        label = box.get_children()[1]
-        app_name = label.get_text()
+        try:
+            label = box.get_children()[1]
+            app_name = label.get_text()
+        except IndexError:
+            label = box.get_children()[0]
+            app_name = label.get_text()
 
         print(f"Launching {app_name}...")
-        launch_app_(self.apps_.get(app_name))
+        launch_app(widget = None, exec=self.apps_.get(app_name))
         exit(0)
 
 
@@ -255,26 +234,26 @@ class App(Gtk.Window):
         return query in label.get_text().lower()
 
     def build_menu(self):
-        self.media_box = self.create_menu_item("Media Control", "app_images/music.png")
-        self.terminal_box = self.create_menu_item("Terminal", "app_images/terminal.png")
-        self.exit_box = self.create_menu_item("Exit", "app_images/exit.png")
-        self.file_manager_box = self.create_menu_item("Open File Manager", "app_images/folder.png")
-        self.app_box = self.create_menu_item("Applications", "app_images/app.png")
-        self.power_box = self.create_menu_item("Power Settings", "app_images/power.png")
-        self.system_box = self.create_menu_item("Hardware Info", "app_images/info.png")
+        self.media_box = create_menu_item("Media Control", "app_images/music.png", self.on_hover_enter, on_hover_leave)
+        self.terminal_box = create_menu_item("Terminal", "app_images/terminal.png", self.on_hover_enter, on_hover_leave)
+        self.exit_box = create_menu_item("Exit", "app_images/exit.png", self.on_hover_enter, on_hover_leave)
+        self.file_manager_box = create_menu_item("Open File Manager", "app_images/folder.png", self.on_hover_enter, on_hover_leave)
+        self.app_box = create_menu_item("Applications", "app_images/app.png", self.on_hover_enter, on_hover_leave)
+        self.power_box = create_menu_item("Power Settings", "app_images/power.png", self.on_hover_enter, on_hover_leave)
+        self.system_box = create_menu_item("Hardware Info", "app_images/info.png", self.on_hover_enter, on_hover_leave)
         
         self.media_submenu = self.build_media_control_menu()
         self.media_box.submenu_func = self.media_submenu
         self.media_box.menu_id = "media"
         
-        self.terminal_box.click_handler = self.on_terminal_click
-        self.terminal_box.connect("button-press-event", self.on_terminal_click)
+        self.terminal_box.click_handler = lambda w, e, d=self.destroy, t=self.config.terminal: on_terminal_click(w, e, d, t)
+        self.terminal_box.connect("button-press-event", lambda w, e, d = self.destroy, t = self.config.terminal: on_terminal_click(w, e, d, t))
         
-        self.exit_box.click_handler = self.on_exit_click
-        self.exit_box.connect("button-press-event", self.on_exit_click)
+        self.exit_box.click_handler = lambda w, e, a=self.destroy: on_exit_click(w, e, a)
+        self.exit_box.connect("button-press-event", lambda w, e, a=self.destroy: on_exit_click(w, e, a))
         
-        self.file_manager_box.click_handler = self.on_fileM_click
-        self.file_manager_box.connect("button-press-event", self.on_fileM_click)
+        self.file_manager_box.click_handler = lambda w, e, d=self.destroy, m=self.config.file_manager: on_fileM_click(w, e, d, m)
+        self.file_manager_box.connect("button-press-event", lambda w, e, d=self.destroy, m=self.config.file_manager: on_fileM_click(w, e, d, m))
         
         self.app_submenu = self.build_application_menu()
         self.app_box.submenu_func = self.app_submenu
@@ -308,41 +287,12 @@ class App(Gtk.Window):
         self.main_box.pack_start(self.system_box, False, False, 0)
         self.main_box.pack_start(self.power_box, False, False, 0)
         
-        separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-        self.main_box.pack_start(separator, False, False, 4)
+        self.main_box.pack_start(widgets.separator, False, False, 4)
         
         self.main_box.pack_start(self.terminal_box, False, False, 0)
         self.main_box.pack_start(self.file_manager_box, False, False, 0)
         self.main_box.pack_start(self.exit_box, False, False, 0)
 
-    def create_menu_item(self, label_text, icon_path):
-        box = Gtk.EventBox()
-        box.set_above_child(False)
-        
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox.set_border_width(8)
-        
-        try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
-            icon = Gtk.Image.new_from_pixbuf(pixbuf)
-            hbox.pack_start(icon, False, False, 2)
-        except GLib.Error:
-            pass
-            
-        label = Gtk.Label(label=label_text)
-        label.set_xalign(0)
-        hbox.pack_start(label, True, True, 2)
-        
-        if label_text != "Terminal" and label_text != "Exit" and label_text != "Open File Manager":
-            arrow = Gtk.Image.new_from_icon_name("pan-end-symbolic", Gtk.IconSize.MENU)
-            hbox.pack_end(arrow, False, False, 2)
-            
-        box.add(hbox)
-        
-        box.connect("enter-notify-event", self.on_hover_enter)
-        box.connect("leave-notify-event", self.on_hover_leave)
-        
-        return box
     
     def on_hover_enter(self, widget, event):
         widget.get_style_context().add_class("menu-item-hover")
@@ -350,49 +300,7 @@ class App(Gtk.Window):
         if widget in self.menu_items:
             self.current_selected_index = self.menu_items.index(widget)
         return False
-        
-    def on_hover_leave(self, widget, event):
-        widget.get_style_context().remove_class("menu-item-hover")
-        widget.unset_state_flags(Gtk.StateFlags.PRELIGHT)
-        return False
-        
-    def on_terminal_click(self, widget, event):
-        if event is None or event.type == Gdk.EventType.BUTTON_PRESS:
-            open_terminal(widget, self.config.terminal)
-            self.destroy()
-            Gtk.main_quit()
 
-    def on_exit_click(self, widget, event):
-        if event is None or event.type == Gdk.EventType.BUTTON_PRESS:
-            exit_(widget)
-            self.destroy()
-            Gtk.main_quit()
-
-    def on_fileM_click(self, widget, event):
-        if event is None or event.type == Gdk.EventType.BUTTON_PRESS:
-            open_fileM(widget, self.config.file_manager)
-            self.destroy()
-            Gtk.main_quit()
-
-    def build_submenu_window(self, title):
-        window = Gtk.Window(type=Gtk.WindowType.POPUP)
-        window.set_decorated(False)
-        window.set_resizable(False)
-        window.set_skip_taskbar_hint(True)
-        window.set_skip_pager_hint(True)
-        window.get_style_context().add_class('Submenu')
-        
-        screen = window.get_screen()
-        visual = screen.get_rgba_visual()
-        if visual and screen.is_composited():
-            window.set_visual(visual)
-
-        vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        window.add(vbox)
-        
-        window.connect("key-press-event", lambda w, e: w.destroy() if e.keyval == Gdk.KEY_Escape else None)
-        
-        return window, vbox
     
     def toggle_submenu(self, submenu_func, parent_widget, menu_id):
         if menu_id in self.open_submenus and self.open_submenus[menu_id].get_visible():
@@ -439,7 +347,7 @@ class App(Gtk.Window):
             
     def build_media_control_menu(self):
         def create_submenu():
-            window, vbox = self.build_submenu_window("Media Control")
+            window, vbox = build_submenu_window("Media Control")
 
             text = '▶'
             media = MediaPlayerMonitor()
@@ -473,8 +381,7 @@ class App(Gtk.Window):
             
             hbox.pack_start(self.media_image, False, False, 10)
             hbox.pack_start(self.title_label, False, False, 0)
-            separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-            vbox.pack_start(separator, False, False, 0)
+            vbox.pack_start(widgets.media_separator, False, False, 0)
             
             window.submenu_items = []
             
@@ -487,9 +394,9 @@ class App(Gtk.Window):
             vbox.pack_start(grid, False, False, 0)
             
             for label_text, icon_path, action_func in items:
-                item = self.create_submenu_item(label_text, icon_path)
+                item = create_submenu_item(label_text, icon_path, on_submenu_hover_enter=lambda w, e, a=self.active_submenu: on_submenu_hover_enter(w, e, a), on_submenu_hover_leave=on_submenu_hover_leave)
                 item.action_func = action_func
-                item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
+                item.connect("button-press-event", lambda w, e, f=action_func: on_submenu_item_click(w, e, f))
                 if count == 3:
                     column += 1
                     row = 0
@@ -535,7 +442,7 @@ class App(Gtk.Window):
     def build_application_menu(self):
         def create_submenu():
             self.apps_ = {}
-            window, vbox = self.build_submenu_window("Applications")
+            window, vbox = build_submenu_window("Applications")
             
             scrolled_window = Gtk.ScrolledWindow()
             scrolled_window.get_style_context().add_class("Scroll-Window")
@@ -555,12 +462,16 @@ class App(Gtk.Window):
             
             apps = get_app_info()
             for name, exec_cmd, icon in apps:
-                item = self.create_submenu_item(name, icon, use_theme_icon=True)
+                item = create_submenu_item(name, icon, use_theme_icon=True, on_submenu_hover_enter=lambda w, e, a=self.active_submenu: on_submenu_hover_enter(w, e, a), on_submenu_hover_leave=on_submenu_hover_leave)
                 item.exec_cmd = exec_cmd
-                item.connect("button-press-event", lambda w, e, cmd=exec_cmd: self.on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
+                item.connect("button-press-event", lambda w, e, cmd=exec_cmd: on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
                 self.apps_[name] = exec_cmd
                 self.listbox.add(item)
-
+                
+            if self.config.show_app_info:
+                info = Gtk.Label(label = 'Use Tab and Shift+Tab to navigate.')
+                info.get_style_context().add_class('App-Info')
+                vbox.pack_start(info, False, False, 0)
             
             def navigate(direction):
                 if direction == 'up' and window.current_selected_index > 0:
@@ -605,7 +516,7 @@ class App(Gtk.Window):
         
     def build_power_menu(self):
         def create_submenu():
-            window, vbox = self.build_submenu_window("Power Settings")
+            window, vbox = build_submenu_window("Power Settings")
             
             items = [
                 ("Power Off         ⏻", None, shutdown_machine),
@@ -618,9 +529,9 @@ class App(Gtk.Window):
             window.current_selected_index = 0
             
             for label_text, icon_path, action_func in items:
-                item = self.create_submenu_item(label_text, icon_path)
+                item = create_submenu_item(label_text, icon_path, on_submenu_hover_enter=lambda w, e, a=self.active_submenu: on_submenu_hover_enter(w, e, a), on_submenu_hover_leave=on_submenu_hover_leave)
                 item.action_func = action_func
-                item.connect("button-press-event", lambda w, e, f=action_func: self.on_submenu_item_click(w, e, f))
+                item.connect("button-press-event", lambda w, e, f=action_func: on_submenu_item_click(w, e, f))
                 vbox.pack_start(item, False, False, 0)
                 window.submenu_items.append(item)
                 
@@ -660,14 +571,14 @@ class App(Gtk.Window):
         
     def build_system_info_menu(self):
         def create_submenu():
-            window, vbox = self.build_submenu_window("Hardware Info")
+            window, vbox = build_submenu_window("Hardware Info")
             
-            cpu_header = self.create_info_header("CPU", "app_images/cpu.png")
+            cpu_header = create_info_header("CPU", "app_images/cpu.png")
             cpu_header.get_style_context().add_class('sysInfo')
 
             vbox.pack_start(cpu_header, False, False, 0)
             
-            cpu_name = self.create_info_item(f"CPU Name: {get_cpu_info()}")
+            cpu_name = create_info_item(f"CPU Name: {get_cpu_info()}")
             cpu_name.get_style_context().add_class('sysInfo')
             
             vbox.pack_start(cpu_name, False, False, 0)
@@ -680,10 +591,9 @@ class App(Gtk.Window):
             self.cpu_usage.set_margin_start(20)
             self.cpu_usage.set_xalign(0)
             
-            separator1 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-            vbox.pack_start(separator1, False, False, 4)
+            vbox.pack_start(widgets.sys_separator, False, False, 4)
             
-            ram_header = self.create_info_header("RAM", "app_images/ram.png")
+            ram_header = create_info_header("RAM", "app_images/ram.png")
             ram_header.get_style_context().add_class('sysInfo')
 
             vbox.pack_start(ram_header, False, False, 0)
@@ -698,15 +608,14 @@ class App(Gtk.Window):
             
             check = check_gpu()
             if check != '':
-                separator2 = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
-                vbox.pack_start(separator2, False, False, 4)
+                vbox.pack_start(widgets.sys_separator_, False, False, 4)
                 
-                gpu_header = self.create_info_header("GPU", "app_images/gpu.png")
+                gpu_header = create_info_header("GPU", "app_images/gpu.png")
                 gpu_header.get_style_context().add_class('sysInfo')
 
                 vbox.pack_start(gpu_header, False, False, 0)
                 
-                gpu_name = self.create_info_item(f"GPU Name: {get_nvidia_name()}")
+                gpu_name = create_info_item(f"GPU Name: {get_nvidia_name()}")
                 gpu_name.get_style_context().add_class('sysInfo')
                 
                 vbox.pack_start(gpu_name, False, False, 0)
@@ -738,87 +647,7 @@ class App(Gtk.Window):
             
         return create_submenu
 
-        
-    def create_submenu_item(self, label_text, icon_path=None, use_theme_icon=False):
-        box = Gtk.EventBox()
-        box.set_above_child(False)
-        
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-        hbox.set_border_width(8)
-        
-        if icon_path:
-            if use_theme_icon:
-                try:
-                    pixbuf = Gtk.IconTheme.get_default().load_icon(icon_path, 32, 0)
-                    scaled_pixbuf = pixbuf.scale_simple(20, 20, GdkPixbuf.InterpType.BILINEAR)
-                    icon = Gtk.Image.new_from_pixbuf(scaled_pixbuf)
-                except GLib.Error:
-                    icon = Gtk.Image.new_from_icon_name(icon_path, Gtk.IconSize.SMALL_TOOLBAR)
-            else:
-                try:
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
-                    icon = Gtk.Image.new_from_pixbuf(pixbuf)
-                except GLib.Error:
-                    icon = Gtk.Image.new_from_icon_name(icon_path, Gtk.IconSize.MENU)
-                    
-            hbox.pack_start(icon, False, False, 2)
-            
-        label = Gtk.Label(label=label_text)
-        label.set_xalign(0)
-        hbox.pack_start(label, True, True, 2)
-        
-        box.add(hbox)
-        
-        box.connect("enter-notify-event", self.on_submenu_hover_enter)
-        box.connect("leave-notify-event", self.on_submenu_hover_leave)
-        
-        return box
-    
-    def on_submenu_hover_enter(self, widget, event):
-        widget.get_style_context().add_class("menu-item-hover")
-        widget.set_state_flags(Gtk.StateFlags.PRELIGHT, True)
-        
-        if self.active_submenu and hasattr(self.active_submenu, 'submenu_items'):
-            if widget in self.active_submenu.submenu_items:
-                self.active_submenu.current_selected_index = self.active_submenu.submenu_items.index(widget)
-        
-        return False
-        
-    def on_submenu_hover_leave(self, widget, event):
-        widget.get_style_context().remove_class("menu-item-hover")
-        widget.unset_state_flags(Gtk.StateFlags.PRELIGHT)
-        return False
-        
-    def create_info_header(self, text, icon_path):
-        box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=8)
-        box.set_border_width(8)
-        
-        try:
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(icon_path, 20, 20)
-            icon = Gtk.Image.new_from_pixbuf(pixbuf)
-            box.pack_start(icon, False, False, 0)
-        except GLib.Error:
-            pass
-            
-        label = Gtk.Label(label=text)
-        label.set_xalign(0)
-        box.pack_start(label, False, False, 0)
-        
-        return box
-        
-    def create_info_item(self, text):
-        label = Gtk.Label(label=text)
-        label.set_xalign(0)
-        label.set_margin_start(20)
-        
-        return label
-        
-    def on_submenu_item_click(self, widget, event, callback):
-        if event is None or event.type == Gdk.EventType.BUTTON_PRESS:
-            callback(widget)
-            for window in Gtk.Window.list_toplevels():
-                window.destroy()
-            Gtk.main_quit()
+
 
 
 def show_menu():
@@ -832,8 +661,7 @@ def show_menu():
         css_provider,
         Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
     )
- 
-    app = App()
+    capsule = Capsule()
     Gtk.main()
 
 show_menu()

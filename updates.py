@@ -8,7 +8,7 @@ from gi.repository import GdkPixbuf, GLib
 
 from media import MediaPlayerMonitor
 from sys_info import *
-from round_image import create_circular_pixbuf
+from raduis_image import create_radius_pixbuf
 
 media = MediaPlayerMonitor()
 
@@ -101,10 +101,10 @@ def update_media(title_label, image):
                 safe_set_label(title_label, current_title)
                 
                 media_ = f'{current_title}\nBy\n{media.artist}'
-                height, width = 50, 50
+                height, width = 120, 120
                 if 'file:///' in media.art_url:
                     thumbnail = media.art_url.replace('file:///', '/')
-                    height, width = 60, 60
+                    height, width = 120, 120
                 elif 'https://' in media.art_url or 'http://' in media.art_url:
                     thumbnail = get_cached_filename(current_title)
                     if not os.path.exists(thumbnail):
@@ -112,11 +112,11 @@ def update_media(title_label, image):
                         urllib.request.urlretrieve(media.art_url, thumbnail)
                     else:
                         print(f"Using cached thumbnail: {thumbnail}")
-                    height, width = 35, 35
+                    height, width = 120, 120
 
                 if thumbnail and os.path.exists(thumbnail):
                     pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(thumbnail, height, width)
-                    circular_pixbuf = create_circular_pixbuf(pixbuf)
+                    circular_pixbuf = create_radius_pixbuf(pixbuf)
 
                     print("Setting images safely...")
                     safe_set_image(image, circular_pixbuf)
