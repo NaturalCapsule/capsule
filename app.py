@@ -22,6 +22,8 @@ class Capsule(Gtk.Window):
     def __init__(self):
         super().__init__(type=Gtk.WindowType.POPUP)
         self.config = config
+        self.apps_ = {}
+
         
         self.set_position(Gtk.WindowPosition.MOUSE)
         self.set_skip_taskbar_hint(True)
@@ -38,21 +40,6 @@ class Capsule(Gtk.Window):
         if visual and screen.is_composited():
             self.set_visual(visual)
 
-        self.search_entry = widgets.search_entry
-        self.listbox = widgets.listbox
-        self.title_label = widgets.title_label
-        self.media_image = widgets.media_image
-        self.cpu_temp = widgets.cpu_temp
-        self.cpu_usage = widgets.cpu_usage
-        self.ram_usage = widgets.ram_usage
-        self.used_ram = widgets.used_ram
-        self.gpu_temp = widgets.gpu_temp
-        self.gpu_usage = widgets.gpu_usage
-        self.gpu_vram = widgets.gpu_vram
-        self.gpu_speed = widgets.gpu_speed
-        self.gpu_power = widgets.gpu_power
-
-
         self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         self.add(self.main_box)
         
@@ -61,20 +48,21 @@ class Capsule(Gtk.Window):
         self.current_selected_index = 0
         self.active_submenu = None
 
+
         self.build_menu()
         self.connect("key-press-event", self.on_key_press)
-        self.listbox.connect("key-press-event", self.on_key_press_)
-        self.search_entry.connect("changed", self.on_search_changed)
+        # widgets.listbox.connect("key-press-event", self.on_key_press_)
+        # widgets.search_entry.connect("changed", self.on_search_changed)
         
-        RunTimers(self.cpu_temp, self.cpu_usage, self.ram_usage, self.used_ram, 
-                  self.gpu_temp, self.gpu_usage, self.gpu_vram, self.gpu_speed, 
-                  self.gpu_power)
+        RunTimers(widgets.cpu_temp, widgets.cpu_usage, widgets.ram_usage, widgets.used_ram, 
+                  widgets.gpu_temp, widgets.gpu_usage, widgets.gpu_vram, widgets.gpu_speed, 
+                  widgets.gpu_power)
         
         
-        self.listbox.set_filter_func(self.filter_func, None)
-        self.listbox.connect("row-selected", self.on_row_selected)
+        # widgets.listbox.set_filter_func(self.filter_func, None)
+        # widgets.listbox.connect("row-selected", self.on_row_selected)
         
-        update_media_(self.title_label, self.media_image)
+        update_media_(widgets.title_label, widgets.media_image)
             
         self.show_all()
 
@@ -100,7 +88,7 @@ class Capsule(Gtk.Window):
         #     current_index = 0
 
         if key == "Return":
-            selected_row = self.listbox.get_selected_row()
+            selected_row = widgets.listbox.get_selected_row()
             if selected_row:
                 self.run_selected_program(selected_row)
             return True
@@ -207,9 +195,10 @@ class Capsule(Gtk.Window):
             row.get_style_context().add_class("App-List-selected-row")
 
     def on_search_changed(self, search_entry):
-        self.listbox.invalidate_filter()
+        widgets.listbox.invalidate_filter()
 
     def filter_func(self, row, data):
+        
         if not row:
             return False
 
@@ -230,7 +219,7 @@ class Capsule(Gtk.Window):
         if not label:
             return False
 
-        query = self.search_entry.get_text().lower()
+        query = widgets.search_entry.get_text().lower()
         return query in label.get_text().lower()
 
     def build_menu(self):
@@ -370,17 +359,17 @@ class Capsule(Gtk.Window):
                 (">>", None, next_track_func),
             ]
             
-            self.title_label.set_margin_start(20)
-            self.title_label.set_margin_end(20)
-            self.title_label.set_xalign(0)
+            widgets.title_label.set_margin_start(20)
+            widgets.title_label.set_margin_end(20)
+            widgets.title_label.set_xalign(0)
 
             grid = Gtk.Grid()
             
             hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
             vbox.pack_start(hbox, False, False, 0)
             
-            hbox.pack_start(self.media_image, False, False, 10)
-            hbox.pack_start(self.title_label, False, False, 0)
+            hbox.pack_start(widgets.media_image, False, False, 10)
+            hbox.pack_start(widgets.title_label, False, False, 0)
             vbox.pack_start(widgets.media_separator, False, False, 0)
             
             window.submenu_items = []
@@ -434,15 +423,20 @@ class Capsule(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
 
-                
             return window
             
         return create_submenu
         
+        
     def build_application_menu(self):
         def create_submenu():
-            self.apps_ = {}
             window, vbox = build_submenu_window("Applications")
+            
+            widgets.listbox.connect("key-press-event", self.on_key_press_)
+            widgets.search_entry.connect("changed", self.on_search_changed)
+            
+            widgets.listbox.set_filter_func(self.filter_func, None)
+            widgets.listbox.connect("row-selected", self.on_row_selected)
             
             scrolled_window = Gtk.ScrolledWindow()
             scrolled_window.get_style_context().add_class("Scroll-Window")
@@ -455,18 +449,19 @@ class Capsule(Gtk.Window):
             window.submenu_items = []
             window.current_selected_index = 0
             
-            scrolled_window.add(self.listbox)
-            vbox.pack_start(self.search_entry, True, True, 0)
+            
+            scrolled_window.add(widgets.listbox)
+            vbox.pack_start(widgets.search_entry, True, True, 0)
             vbox.pack_start(scrolled_window, True, True, 0)
             
-            
-            apps = get_app_info()
-            for name, exec_cmd, icon in apps:
-                item = create_submenu_item(name, icon, use_theme_icon=True, on_submenu_hover_enter=lambda w, e, a=self.active_submenu: on_submenu_hover_enter(w, e, a), on_submenu_hover_leave=on_submenu_hover_leave)
-                item.exec_cmd = exec_cmd
-                item.connect("button-press-event", lambda w, e, cmd=exec_cmd: on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
-                self.apps_[name] = exec_cmd
-                self.listbox.add(item)
+            if not self.apps_:
+                apps = get_app_info()
+                for name, exec_cmd, icon in apps:
+                    item = create_submenu_item(name, icon, use_theme_icon=True, on_submenu_hover_enter=lambda w, e, a=self.active_submenu: on_submenu_hover_enter(w, e, a), on_submenu_hover_leave=on_submenu_hover_leave)
+                    item.exec_cmd = exec_cmd
+                    item.connect("button-press-event", lambda w, e, cmd=exec_cmd: on_submenu_item_click(w, e, lambda w: launch_app(w, cmd)))
+                    self.apps_[name] = exec_cmd
+                    widgets.listbox.add(item)
                 
             if self.config.show_app_info:
                 info = Gtk.Label(label = 'Use Tab and Shift+Tab to navigate.')
@@ -508,7 +503,6 @@ class Capsule(Gtk.Window):
             window.navigate = navigate
             window.activate_selected = activate_selected
             
-
             return window
             
         return create_submenu
@@ -582,13 +576,13 @@ class Capsule(Gtk.Window):
             
             vbox.pack_start(cpu_name, False, False, 0)
             
-            vbox.pack_start(self.cpu_temp, False, False, 0)
-            self.cpu_temp.set_margin_start(20)
-            self.cpu_temp.set_xalign(0)
+            vbox.pack_start(widgets.cpu_temp, False, False, 0)
+            widgets.cpu_temp.set_margin_start(20)
+            widgets.cpu_temp.set_xalign(0)
             
-            vbox.pack_start(self.cpu_usage, False, False, 0)
-            self.cpu_usage.set_margin_start(20)
-            self.cpu_usage.set_xalign(0)
+            vbox.pack_start(widgets.cpu_usage, False, False, 0)
+            widgets.cpu_usage.set_margin_start(20)
+            widgets.cpu_usage.set_xalign(0)
             
             vbox.pack_start(widgets.sys_separator, False, False, 4)
             
@@ -597,13 +591,13 @@ class Capsule(Gtk.Window):
 
             vbox.pack_start(ram_header, False, False, 0)
             
-            vbox.pack_start(self.ram_usage, False, False, 0)
-            self.ram_usage.set_margin_start(20)
-            self.ram_usage.set_xalign(0)
+            vbox.pack_start(widgets.ram_usage, False, False, 0)
+            widgets.ram_usage.set_margin_start(20)
+            widgets.ram_usage.set_xalign(0)
             
-            vbox.pack_start(self.used_ram, False, False, 0)
-            self.used_ram.set_margin_start(20)
-            self.used_ram.set_xalign(0)
+            vbox.pack_start(widgets.used_ram, False, False, 0)
+            widgets.used_ram.set_margin_start(20)
+            widgets.used_ram.set_xalign(0)
             
             check = check_gpu()
             if check != '':
@@ -619,25 +613,25 @@ class Capsule(Gtk.Window):
                 
                 vbox.pack_start(gpu_name, False, False, 0)
                 
-                vbox.pack_start(self.gpu_temp, False, False, 0)
-                self.gpu_temp.set_margin_start(20)
-                self.gpu_temp.set_xalign(0)
+                vbox.pack_start(widgets.gpu_temp, False, False, 0)
+                widgets.gpu_temp.set_margin_start(20)
+                widgets.gpu_temp.set_xalign(0)
                 
-                vbox.pack_start(self.gpu_usage, False, False, 0)
-                self.gpu_usage.set_margin_start(20)
-                self.gpu_usage.set_xalign(0)
+                vbox.pack_start(widgets.gpu_usage, False, False, 0)
+                widgets.gpu_usage.set_margin_start(20)
+                widgets.gpu_usage.set_xalign(0)
                 
-                vbox.pack_start(self.gpu_vram, False, False, 0)
-                self.gpu_vram.set_margin_start(20)
-                self.gpu_vram.set_xalign(0)
+                vbox.pack_start(widgets.gpu_vram, False, False, 0)
+                widgets.gpu_vram.set_margin_start(20)
+                widgets.gpu_vram.set_xalign(0)
                 
-                vbox.pack_start(self.gpu_speed, False, False, 0)
-                self.gpu_speed.set_margin_start(20)
-                self.gpu_speed.set_xalign(0)
+                vbox.pack_start(widgets.gpu_speed, False, False, 0)
+                widgets.gpu_speed.set_margin_start(20)
+                widgets.gpu_speed.set_xalign(0)
                 
-                vbox.pack_start(self.gpu_power, False, False, 0)
-                self.gpu_power.set_margin_start(20)
-                self.gpu_power.set_xalign(0)
+                vbox.pack_start(widgets.gpu_power, False, False, 0)
+                widgets.gpu_power.set_margin_start(20)
+                widgets.gpu_power.set_xalign(0)
                 
             window.navigate = lambda direction: None
             window.activate_selected = lambda: None
