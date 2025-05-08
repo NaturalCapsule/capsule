@@ -39,7 +39,6 @@
 }
 
 .App-Info {
-    /* background-color: #2e2e3e; */
     color: #f8f8f2;
     padding: 15px;
     border-radius: 10px;
@@ -61,7 +60,6 @@
 
 .App-Search {
     background-color: #3b3f51;
-    color: #f8f8f2;
     border-radius: 8px;
     padding: 5px;
     border: none;
@@ -70,9 +68,15 @@
 }
 
 .App-Search:focus {
+    color: white;
     background-color: #4e5266;
     border: 1px solid #6272a4;
     box-shadow: 0 0 5px rgba(98, 114, 164, 0.5);
+}
+
+.App-Search > image,
+.App-Search > icon.primary {
+    color: white;
 }
 
 .menu-item-hover {
@@ -98,7 +102,3 @@
     border-radius: 10px;
     border:3px solid #44475a;
 }
-
-/* * {
-    transition: all 0.2s ease-in-out;
-} */

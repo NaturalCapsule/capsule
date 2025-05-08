@@ -434,6 +434,7 @@ class Capsule(Gtk.Window):
             
             widgets.listbox.connect("key-press-event", self.on_key_press_)
             widgets.search_entry.connect("changed", self.on_search_changed)
+            widgets.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, "view-app-grid-symbolic")
             
             widgets.listbox.set_filter_func(self.filter_func, None)
             widgets.listbox.connect("row-selected", self.on_row_selected)
