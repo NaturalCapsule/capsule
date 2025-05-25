@@ -38,6 +38,13 @@
     border-radius: 40px;
 }
 
+.Clock {
+    color: #d0d0d0;
+    font-weight: 500;
+    font-size: 30px;
+    margin-bottom: 5px;
+}
+
 .App-Info {
     color: #f8f8f2;
     padding: 15px;

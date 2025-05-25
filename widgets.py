@@ -16,6 +16,10 @@ sys_separator_.get_style_context().add_class('Separators')
 media_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
 media_separator.get_style_context().add_class('Separators')
 
+timer_separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+timer_separator.get_style_context().add_class('Separators')
+
+
 search_entry = Gtk.SearchEntry()
 search_entry.get_style_context().add_class('App-Search')
 search_entry.set_placeholder_text('Search...')
@@ -59,3 +63,7 @@ gpu_speed.get_style_context().add_class('sysInfo')
 
 gpu_power = Gtk.Label(label="GPU Power: Updating...")
 gpu_power.get_style_context().add_class('sysInfo')
+
+
+time_label = Gtk.Label(label = 'Loading Time...')
+time_label.get_style_context().add_class('Clock')

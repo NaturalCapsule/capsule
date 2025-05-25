@@ -2,6 +2,8 @@ import gi
 import os
 import hashlib
 import urllib.request
+import time
+import config
 
 gi.require_version('Gdk', '3.0')
 from gi.repository import GdkPixbuf, GLib
@@ -20,7 +22,16 @@ def update_cpu_temp(cpu_temp):
     cpu_temp.set_label(f"CPU Temp: {temp}C")
     return True
 
-
+def update_time(time_label):
+    t = time.localtime()
+    time__ = config.display_time
+    fmt_time = time.strftime(time__, t)
+    # fmt_time = time.strftime("  %H:%M", t)
+    # fmt_time = time.strftime("%H:%M:%S", t)
+    # d
+    time_label.set_text(f"{fmt_time}")
+    return True
+    
 def update_cpu_usage(cpu_usage):
     usage = get_cpu_usage()
     cpu_usage.set_label(f"CPU Usage: {usage}%")

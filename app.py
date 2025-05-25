@@ -5,7 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk
-from timers import RunTimers, update_media_
+from timers import RunTimers, update_media_, update_time_
 from media import MediaPlayerMonitor
 
 from actions import *
@@ -63,6 +63,7 @@ class Capsule(Gtk.Window):
         # widgets.listbox.connect("row-selected", self.on_row_selected)
         
         update_media_(widgets.title_label, widgets.media_image)
+        update_time_(widgets.time_label)
             
         self.show_all()
 
@@ -230,6 +231,7 @@ class Capsule(Gtk.Window):
         self.app_box = create_menu_item("Applications", "app_images/app.png", self.on_hover_enter, on_hover_leave)
         self.power_box = create_menu_item("Power Settings", "app_images/power.png", self.on_hover_enter, on_hover_leave)
         self.system_box = create_menu_item("Hardware Info", "app_images/info.png", self.on_hover_enter, on_hover_leave)
+        self.timer_box = create_menu_item('Time & Date', 'app_images/clock.png', self.on_hover_enter, on_hover_leave)
         
         self.media_submenu = self.build_media_control_menu()
         self.media_box.submenu_func = self.media_submenu
@@ -256,16 +258,22 @@ class Capsule(Gtk.Window):
         self.system_box.submenu_func = self.system_submenu
         self.system_box.menu_id = "system"
         
+        self.timer_submenu = self.build_time_menu()
+        self.timer_box.submenu_func = self.timer_submenu
+        self.timer_box.menu_id = "time"
+        
         self.media_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.media_submenu, w, "media"))
         self.app_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.app_submenu, w, "app"))
         self.power_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.power_submenu, w, "power"))
         self.system_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.system_submenu, w, "system"))
+        self.timer_box.connect("button-press-event", lambda w, e: self.toggle_submenu(self.timer_submenu, w, "time"))
         
         self.menu_items = [
             self.media_box,
             self.app_box,
             self.system_box,
             self.power_box,
+            self.timer_box,
             self.terminal_box,
             self.file_manager_box,
             self.exit_box
@@ -275,6 +283,7 @@ class Capsule(Gtk.Window):
         self.main_box.pack_start(self.app_box, False, False, 0)
         self.main_box.pack_start(self.system_box, False, False, 0)
         self.main_box.pack_start(self.power_box, False, False, 0)
+        self.main_box.pack_start(self.timer_box, False, False, 0)
         
         self.main_box.pack_start(widgets.separator, False, False, 4)
         
@@ -333,7 +342,7 @@ class Capsule(Gtk.Window):
         if menu_id in self.open_submenus:
             del self.open_submenus[menu_id]
             self.active_submenu = None
-            
+
     def build_media_control_menu(self):
         def create_submenu():
             window, vbox = build_submenu_window("Media Control")
@@ -642,6 +651,20 @@ class Capsule(Gtk.Window):
         return create_submenu
 
 
+    def build_time_menu(self):
+        def create_submenu():
+            window, vbox = build_submenu_window("Time & Date")
+            vbox.pack_start(widgets.time_label, False, False, 0)
+            vbox.pack_start(widgets.timer_separator, False, False, 0)
+
+
+            window.navigate = lambda direction: None
+            window.activate_selected = lambda: None
+
+            return window
+        return create_submenu
+
+    
 
 
 def show_menu():
