@@ -2,7 +2,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 
 from gi.repository import Gtk
-
+from date import RoundedCalendarLabel
 
 separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
 separator.get_style_context().add_class('Separators')
@@ -67,3 +67,9 @@ gpu_power.get_style_context().add_class('sysInfo')
 
 time_label = Gtk.Label(label = 'Loading Time...')
 time_label.get_style_context().add_class('Clock')
+
+date_label = Gtk.Label(label = 'Loading Date...')
+date_label.get_style_context().add_class('Date')
+
+
+rounded_calendar = RoundedCalendarLabel()

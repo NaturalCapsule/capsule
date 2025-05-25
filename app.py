@@ -5,7 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 
 from gi.repository import Gtk, Gdk
-from timers import RunTimers, update_media_, update_time_
+from timers import RunTimers, update_media_, update_time_, update_date_
 from media import MediaPlayerMonitor
 
 from actions import *
@@ -51,19 +51,17 @@ class Capsule(Gtk.Window):
 
         self.build_menu()
         self.connect("key-press-event", self.on_key_press)
-        # widgets.listbox.connect("key-press-event", self.on_key_press_)
-        # widgets.search_entry.connect("changed", self.on_search_changed)
         
         RunTimers(widgets.cpu_temp, widgets.cpu_usage, widgets.ram_usage, widgets.used_ram, 
                   widgets.gpu_temp, widgets.gpu_usage, widgets.gpu_vram, widgets.gpu_speed, 
                   widgets.gpu_power)
         
         
-        # widgets.listbox.set_filter_func(self.filter_func, None)
-        # widgets.listbox.connect("row-selected", self.on_row_selected)
         
         update_media_(widgets.title_label, widgets.media_image)
         update_time_(widgets.time_label)
+        # update_date_(widgets.rounded_calendar)
+        
             
         self.show_all()
 
@@ -656,7 +654,8 @@ class Capsule(Gtk.Window):
             window, vbox = build_submenu_window("Time & Date")
             vbox.pack_start(widgets.time_label, False, False, 0)
             vbox.pack_start(widgets.timer_separator, False, False, 0)
-
+            # vbox.pack_start(widgets.date_label, False, False, 0)
+            vbox.pack_start(widgets.rounded_calendar, False, False, 0)
 
             window.navigate = lambda direction: None
             window.activate_selected = lambda: None
@@ -664,7 +663,7 @@ class Capsule(Gtk.Window):
             return window
         return create_submenu
 
-    
+
 
 
 def show_menu():

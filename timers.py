@@ -3,13 +3,16 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GLib
 import threading
 from sys_info import *
-from updates import update_media, update_time
+from updates import update_media, update_time, update_rounded_calendar
 
 def update_media_(label, image):
     GLib.timeout_add(400, update_media, label, image)
 
 def update_time_(label):
     GLib.timeout_add(1, update_time, label)
+
+def update_date_(label):
+    GLib.timeout_add(1000, update_rounded_calendar, label)
 
 class RunTimers:
     def __init__(self, cpu_temp, cpu_usage, ram_usage, used_ram, gpu_temp=None, 

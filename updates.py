@@ -11,6 +11,7 @@ from gi.repository import GdkPixbuf, GLib
 from media import MediaPlayerMonitor
 from sys_info import *
 from raduis_image import create_radius_pixbuf
+# from date import get_calendar_html
 
 media = MediaPlayerMonitor()
 
@@ -26,12 +27,20 @@ def update_time(time_label):
     t = time.localtime()
     time__ = config.display_time
     fmt_time = time.strftime(time__, t)
-    # fmt_time = time.strftime("  %H:%M", t)
-    # fmt_time = time.strftime("%H:%M:%S", t)
-    # d
     time_label.set_text(f"{fmt_time}")
     return True
+
+
+def update_rounded_calendar(calendar_widget):
+    # for child in calendar_widget.get_children():
+    #     calendar_widget.remove(child)
     
+    # calendar_widget.create_calendar()
+    # calendar_widget.show_all()
+    # return True
+    calendar_widget.update_calendar()
+    return True
+
 def update_cpu_usage(cpu_usage):
     usage = get_cpu_usage()
     cpu_usage.set_label(f"CPU Usage: {usage}%")

@@ -39,10 +39,46 @@
 }
 
 .Clock {
+    padding-top: 10px;
     color: #d0d0d0;
     font-weight: 500;
     font-size: 30px;
     margin-bottom: 5px;
+}
+
+
+
+.current-day {
+    background-color: white;
+    color: #282a36;
+    border-radius: 8px;
+    padding: 2px 6px;
+    margin: 1px;
+    font-weight: bold;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.calendar-day {
+    color: white;
+    min-width: 20px;
+    min-height: 20px;
+    padding: 2px;
+    /* padding: 2px 6px; */
+}
+
+.weekday-header {
+    color: white;
+    font-weight: bold;
+    padding: 2px
+}
+
+.month-header {
+    font-weight: bold;
+    font-size: 14px;
+    padding: 5px;
+    margin: 5px;
+    /* padding-bottom: 5px */
 }
 
 .App-Info {
